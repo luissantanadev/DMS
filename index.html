@@ -1,0 +1,99 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | Controle de Docas</title>
+    <link rel="stylesheet" href="/static/css/login.css">
+</head>
+<body>
+    <main class="login-page">
+        <section class="login-visual">
+            <div class="brand">
+                <div class="brand-mark">CD</div>
+                <div>
+                    <span class="eyebrow">LOGISTICS CONTROL TOWER</span>
+                    <h1>Controle de Docas</h1>
+                </div>
+            </div>
+
+            <div class="visual-content">
+                <span class="tag">GESTÃO OPERACIONAL</span>
+                <h2>Controle sua operação<br>em um só lugar.</h2>
+                <p>Acompanhe docas, cargas, veículos e indicadores operacionais em tempo real.</p>
+
+                <div class="mini-dashboard">
+                    <div><span>DOCAS</span><strong>20</strong></div>
+                    <div><span>LIVRES</span><strong class="green">04</strong></div>
+                    <div><span>OCUPADAS</span><strong class="blue">14</strong></div>
+                    <div><span>ALERTAS</span><strong class="red">02</strong></div>
+                </div>
+            </div>
+
+            <div class="visual-footer">
+                <span>WMS INTEGRADO</span>
+                <span>•</span>
+                <span>OPERAÇÃO EM TEMPO REAL</span>
+            </div>
+        </section>
+
+        <section class="login-panel">
+            <div class="login-card">
+                <div class="mobile-brand">CONTROLE DE DOCAS</div>
+                <h2>Bem-vindo</h2>
+                <p class="subtitle">Entre para acessar o painel operacional.</p>
+
+                
+
+                <form method="post">
+                    <input type="hidden" name="csrfmiddlewaretoken" value="hbds4w6eElNqfjvtEM7iHwnfhsquxh9hdaNRXJjqW2YVcnt4pPyEIO6SpG5osSME">
+
+                    <label for="id_username">Usuário</label>
+                    <div class="input-wrap">
+                        <span>⌁</span>
+                        <input id="id_username" name="username" type="text"
+                               placeholder="Digite seu usuário" autocomplete="username" required>
+                    </div>
+
+                    <label for="id_password">Senha</label>
+                    <div class="input-wrap">
+                        <span>●</span>
+                        <input id="id_password" name="password" type="password"
+                               placeholder="Digite sua senha" autocomplete="current-password" required>
+                        <button type="button" class="show-password" onclick="togglePassword()">◉</button>
+                    </div>
+
+                    <div class="options">
+                        <label class="remember">
+                            <input type="checkbox" name="remember"> <span>Lembrar acesso</span>
+                        </label>
+                        <a href="#">Esqueci minha senha</a>
+                    </div>
+
+                    <button class="login-button" type="submit">
+                        Entrar <span>→</span>
+                    </button>
+                </form>
+
+                <div class="secure">
+                    <span>🔒</span>
+                    <span>Acesso protegido</span>
+                </div>
+            </div>
+
+            <footer class="login-footer">
+                Controle de Docas • Versão 1.0
+            </footer>
+        </section>
+    </main>
+
+<script>
+function togglePassword() {
+    const input = document.getElementById("id_password");
+    input.type = input.type === "password" ? "text" : "password";
+}
+</script>
+</body>
+</html>
+
