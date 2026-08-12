@@ -1,0 +1,282 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controle de Docas</title>
+    <link rel="stylesheet" href="/static/css/painel.css">
+</head>
+<body>
+<div class="app">
+    <header class="topbar">
+        <div>
+            <div class="eyebrow">LOGISTICS CONTROL TOWER</div>
+            <h1>Controle de Docas</h1>
+        </div>
+        <div class="clock" id="clock">--:--:--</div>
+    </header>
+
+    <section class="kpis">
+        <article><span>DOCAS</span><strong>15</strong></article>
+        <article><span>LIVRES</span><strong id="kpi-livres">0</strong></article>
+        <article><span>OCUPADAS</span><strong id="kpi-ocupadas">0</strong></article>
+        <article class="danger"><span>ATRASADAS</span><strong>2</strong></article>
+        <article class="inbound"><span>INBOUND</span><strong>162.558</strong></article>
+        <article class="outbound"><span>OUTBOUND</span><strong>97.235</strong></article>
+    </section>
+
+    <main class="content">
+        <section class="dock-panel">
+            <div class="section-title">
+                <h2>Mapa das Docas</h2>
+                <div class="legend">
+                    <span><i class="dot livre"></i> Livre</span>
+                    <span><i class="dot recebimento"></i> Recebimento</span>
+                    <span><i class="dot carregamento"></i> Carregamento</span>
+                    <span><i class="dot separacao"></i> Separação</span>
+                    <span><i class="dot bloqueada"></i> Bloqueada</span>
+                </div>
+            </div>
+
+            <div class="dock-grid">
+                
+                <article class="dock-card livre" onclick="selecionarDoca('D01')">
+                    <div class="dock-head">
+                        <strong>D01</strong>
+                        <span class="status-label">Livre</span>
+                    </div>
+                    <div class="dock-body">
+                        <div class="load">—</div>
+                        <div class="time">Disponível</div>
+                    </div>
+                    <div class="dock-footer">WMS • ONLINE</div>
+                </article>
+                
+                <article class="dock-card carregamento" onclick="selecionarDoca('D02')">
+                    <div class="dock-head">
+                        <strong>D02</strong>
+                        <span class="status-label">Carregamento</span>
+                    </div>
+                    <div class="dock-body">
+                        <div class="load">9700418516</div>
+                        <div class="time">17:00</div>
+                    </div>
+                    <div class="dock-footer">WMS • ONLINE</div>
+                </article>
+                
+                <article class="dock-card recebimento" onclick="selecionarDoca('D03')">
+                    <div class="dock-head">
+                        <strong>D03</strong>
+                        <span class="status-label">Recebimento</span>
+                    </div>
+                    <div class="dock-body">
+                        <div class="load">9700418523</div>
+                        <div class="time">18:00</div>
+                    </div>
+                    <div class="dock-footer">WMS • ONLINE</div>
+                </article>
+                
+                <article class="dock-card bloqueada" onclick="selecionarDoca('D04')">
+                    <div class="dock-head">
+                        <strong>D04</strong>
+                        <span class="status-label">Bloqueada</span>
+                    </div>
+                    <div class="dock-body">
+                        <div class="load">—</div>
+                        <div class="time">Disponível</div>
+                    </div>
+                    <div class="dock-footer">WMS • ONLINE</div>
+                </article>
+                
+                <article class="dock-card recebimento" onclick="selecionarDoca('D05')">
+                    <div class="dock-head">
+                        <strong>D05</strong>
+                        <span class="status-label">Recebimento</span>
+                    </div>
+                    <div class="dock-body">
+                        <div class="load">9700418515</div>
+                        <div class="time">09:00</div>
+                    </div>
+                    <div class="dock-footer">WMS • ONLINE</div>
+                </article>
+                
+                <article class="dock-card recebimento" onclick="selecionarDoca('D06')">
+                    <div class="dock-head">
+                        <strong>D06</strong>
+                        <span class="status-label">Recebimento</span>
+                    </div>
+                    <div class="dock-body">
+                        <div class="load">9700418213</div>
+                        <div class="time">06:00</div>
+                    </div>
+                    <div class="dock-footer">WMS • ONLINE</div>
+                </article>
+                
+                <article class="dock-card livre" onclick="selecionarDoca('D07')">
+                    <div class="dock-head">
+                        <strong>D07</strong>
+                        <span class="status-label">Livre</span>
+                    </div>
+                    <div class="dock-body">
+                        <div class="load">—</div>
+                        <div class="time">Disponível</div>
+                    </div>
+                    <div class="dock-footer">WMS • ONLINE</div>
+                </article>
+                
+                <article class="dock-card carregamento" onclick="selecionarDoca('D08')">
+                    <div class="dock-head">
+                        <strong>D08</strong>
+                        <span class="status-label">Carregamento</span>
+                    </div>
+                    <div class="dock-body">
+                        <div class="load">9700418498</div>
+                        <div class="time">13:00</div>
+                    </div>
+                    <div class="dock-footer">WMS • ONLINE</div>
+                </article>
+                
+                <article class="dock-card recebimento" onclick="selecionarDoca('D09')">
+                    <div class="dock-head">
+                        <strong>D09</strong>
+                        <span class="status-label">Recebimento</span>
+                    </div>
+                    <div class="dock-body">
+                        <div class="load">9700418300</div>
+                        <div class="time">02:00</div>
+                    </div>
+                    <div class="dock-footer">WMS • ONLINE</div>
+                </article>
+                
+                <article class="dock-card carregamento" onclick="selecionarDoca('D10')">
+                    <div class="dock-head">
+                        <strong>D10</strong>
+                        <span class="status-label">Carregamento</span>
+                    </div>
+                    <div class="dock-body">
+                        <div class="load">9700418653</div>
+                        <div class="time">16:00</div>
+                    </div>
+                    <div class="dock-footer">WMS • ONLINE</div>
+                </article>
+                
+                <article class="dock-card manual" onclick="selecionarDoca('D11')">
+                    <div class="dock-head">
+                        <strong>D11</strong>
+                        <span class="status-label">Manual</span>
+                    </div>
+                    <div class="dock-body">
+                        <div class="load">—</div>
+                        <div class="time">Disponível</div>
+                    </div>
+                    <div class="dock-footer">WMS • ONLINE</div>
+                </article>
+                
+                <article class="dock-card livre" onclick="selecionarDoca('D12')">
+                    <div class="dock-head">
+                        <strong>D12</strong>
+                        <span class="status-label">Livre</span>
+                    </div>
+                    <div class="dock-body">
+                        <div class="load">—</div>
+                        <div class="time">Disponível</div>
+                    </div>
+                    <div class="dock-footer">WMS • ONLINE</div>
+                </article>
+                
+                <article class="dock-card separacao" onclick="selecionarDoca('D13')">
+                    <div class="dock-head">
+                        <strong>D13</strong>
+                        <span class="status-label">Separacao</span>
+                    </div>
+                    <div class="dock-body">
+                        <div class="load">9700418455</div>
+                        <div class="time">10:00</div>
+                    </div>
+                    <div class="dock-footer">WMS • ONLINE</div>
+                </article>
+                
+                <article class="dock-card separacao" onclick="selecionarDoca('D14')">
+                    <div class="dock-head">
+                        <strong>D14</strong>
+                        <span class="status-label">Separacao</span>
+                    </div>
+                    <div class="dock-body">
+                        <div class="load">9700418450</div>
+                        <div class="time">08:00</div>
+                    </div>
+                    <div class="dock-footer">WMS • ONLINE</div>
+                </article>
+                
+                <article class="dock-card livre" onclick="selecionarDoca('D15')">
+                    <div class="dock-head">
+                        <strong>D15</strong>
+                        <span class="status-label">Livre</span>
+                    </div>
+                    <div class="dock-body">
+                        <div class="load">—</div>
+                        <div class="time">Disponível</div>
+                    </div>
+                    <div class="dock-footer">WMS • ONLINE</div>
+                </article>
+                
+            </div>
+        </section>
+
+        <aside class="side-panel">
+            <h2>Operação do Dia</h2>
+            <div class="metric"><span>Inbound</span><strong>162.558</strong></div>
+            <div class="metric"><span>Outbound</span><strong>97.235</strong></div>
+            <div class="metric"><span>Transferências</span><strong>35.587</strong></div>
+            <div class="metric"><span>Estoque</span><strong>86.481</strong></div>
+            <hr>
+            <div class="metric small"><span>Recebimentos</span><strong>152</strong></div>
+            <div class="metric small"><span>Expedições</span><strong>98</strong></div>
+            <div class="metric small"><span>Pendências</span><strong>7</strong></div>
+            <div class="metric small"><span>SLA</span><strong>94%</strong></div>
+        </aside>
+    </main>
+
+    <section class="bottom-grid">
+        <article class="panel">
+            <h2>Fluxo Operacional</h2>
+            <div class="bars">
+                <div><span>07h</span><b style="width:35%"></b></div>
+                <div><span>08h</span><b style="width:60%"></b></div>
+                <div><span>09h</span><b style="width:90%"></b></div>
+                <div><span>10h</span><b style="width:70%"></b></div>
+            </div>
+        </article>
+        <article class="panel">
+            <h2>Alertas Operacionais</h2>
+            <ul class="alerts">
+                <li class="critical">D04 aguardando ação há 28 minutos</li>
+                <li class="warning">Carga 9700418515 próxima do SLA</li>
+                <li class="info">03 docas disponíveis</li>
+            </ul>
+        </article>
+    </section>
+</div>
+
+<script>
+function updateClock() {
+    document.getElementById("clock").textContent =
+        new Date().toLocaleTimeString("pt-BR");
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+const cards = [...document.querySelectorAll(".dock-card")];
+document.getElementById("kpi-livres").textContent =
+    cards.filter(c => c.classList.contains("livre")).length;
+document.getElementById("kpi-ocupadas").textContent =
+    cards.filter(c => !c.classList.contains("livre") &&
+                      !c.classList.contains("bloqueada")).length;
+
+function selecionarDoca(codigo) {
+    alert("Detalhes da " + codigo + " — próxima etapa: painel lateral/modal integrado ao WMS.");
+}
+</script>
+</body>
+</html>
