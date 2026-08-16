@@ -4,7 +4,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = "dev-change-this-key"
 DEBUG = False
-ALLOWED_HOSTS = ['://pythonanywhere.com']
+ALLOWED_HOSTS = ['lordthanatos.pythonanywhere.com', 'www.lordthanatos.pythonanywhere.com']
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -67,6 +67,7 @@ LOGIN_REDIRECT_URL = "/painel/"
 LOGOUT_REDIRECT_URL = "/login/"
 
 STATIC_URL = "static/"
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [BASE_DIR / "static"]
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
