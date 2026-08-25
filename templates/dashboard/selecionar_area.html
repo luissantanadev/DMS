@@ -1,0 +1,44 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Selecionar área | Controle de Docas</title>
+    <link rel="stylesheet" href="{% static 'css/painel.css' %}">
+</head>
+<body>
+<div class="app area-selection">
+    <header class="topbar">
+        <div>
+            <div class="eyebrow">LOGISTICS CONTROL TOWER</div>
+            <h1>Controle de Docas</h1>
+        </div>
+    </header>
+
+    <section class="panel area-heading">
+        <span class="eyebrow">ACESSO OPERACIONAL</span>
+        <h2>Escolha sua área de trabalho</h2>
+        <p>Olá, {{ request.user.get_short_name|default:request.user.username }}. Selecione um ambiente para continuar.</p>
+    </section>
+
+    <section class="area-options">
+        {% for area in areas %}
+        <a class="panel area-option area-{{ area.nome|lower }}" href="{% url area.url %}">
+            <span class="area-icon">{% if area.nome == "Portaria" %}↔{% else %}▦{% endif %}</span>
+            <span class="area-name">{{ area.nome }}</span>
+            <span class="area-arrow">→</span>
+        </a>
+        {% endfor %}
+    </section>
+
+    <footer class="area-footer">
+        <span>Acesso controlado por perfil</span>
+        <form method="post" action="{% url 'logout' %}">
+            {% csrf_token %}
+            <button type="submit">Sair</button>
+        </form>
+    </footer>
+</div>
+</body>
+</html>

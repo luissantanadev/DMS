@@ -75,7 +75,7 @@ USE_I18N = True
 USE_TZ = True
 
 LOGIN_URL = "/login/"
-LOGIN_REDIRECT_URL = "/painel/"
+LOGIN_REDIRECT_URL = "/painel/acesso/"
 LOGOUT_REDIRECT_URL = "/login/"
 
 STATIC_URL = "static/"

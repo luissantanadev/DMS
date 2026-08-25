@@ -1,0 +1,102 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portaria | Controle de Docas</title>
+    <link rel="stylesheet" href="{% static 'css/painel.css' %}">
+</head>
+<body>
+<div class="app">
+    <header class="topbar">
+        <div>
+            <div class="eyebrow">LOGISTICS CONTROL TOWER • PORTARIA</div>
+            <h1>Controle de entrada e saída</h1>
+        </div>
+        <div class="topbar-actions">
+            <a class="area-link" href="{% url 'selecionar_area' %}">Trocar área</a>
+            <form method="post" action="{% url 'logout' %}">
+                {% csrf_token %}
+                <button class="area-link" type="submit">Sair</button>
+            </form>
+            <div class="clock" id="clock">--:--:--</div>
+        </div>
+    </header>
+
+    <section class="kpis">
+        <article><span>ENTRADAS HOJE</span><strong>24</strong></article>
+        <article><span>AGUARDANDO</span><strong>06</strong></article>
+        <article><span>VEÍCULOS NO PÁTIO</span><strong>08</strong></article>
+        <article class="inbound"><span>PESO DE ENTRADA</span><strong>162.558 kg</strong></article>
+        <article class="outbound"><span>PESO DE SAÍDA</span><strong>97.235 kg</strong></article>
+        <article class="danger"><span>PENDÊNCIAS</span><strong>02</strong></article>
+    </section>
+
+    <main class="portaria-grid">
+        <section class="panel registration-panel">
+            <div class="section-title">
+                <h2>Novo registro de acesso</h2>
+                <span class="panel-status">PORTARIA ONLINE</span>
+            </div>
+            <form class="portaria-form">
+                <div class="form-section">
+                    <h3>Transportadora</h3>
+                    <div class="form-grid">
+                        <label>Nome da transportadora<input type="text" placeholder="Razão social"></label>
+                        <label>CNPJ<input type="text" placeholder="00.000.000/0000-00"></label>
+                    </div>
+                </div>
+                <div class="form-section">
+                    <h3>Motorista</h3>
+                    <div class="form-grid">
+                        <label>Nome completo<input type="text" placeholder="Nome do motorista"></label>
+                        <label>CPF<input type="text" placeholder="000.000.000-00"></label>
+                    </div>
+                </div>
+                <div class="form-section">
+                    <h3>Caminhão</h3>
+                    <div class="form-grid three-columns">
+                        <label>Placa<input type="text" placeholder="ABC-1D23"></label>
+                        <label>Tipo<input type="text" placeholder="Carreta, truck..."></label>
+                        <label>Nota / carga<input type="text" placeholder="Número da carga"></label>
+                    </div>
+                </div>
+                <div class="form-section">
+                    <h3>Pesagem</h3>
+                    <div class="form-grid three-columns">
+                        <label>Peso de entrada (kg)<input type="number" placeholder="0"></label>
+                        <label>Peso de saída (kg)<input type="number" placeholder="0"></label>
+                        <label>Data e hora<input type="datetime-local"></label>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button class="secondary-button" type="reset">Limpar</button>
+                    <button class="primary-button" type="submit">Registrar entrada <span>→</span></button>
+                </div>
+            </form>
+        </section>
+
+        <aside class="panel side-panel">
+            <div class="section-title"><h2>Últimos registros</h2><span class="panel-status">HOJE</span></div>
+            <div class="access-record"><strong>ABC-1D23</strong><span> Transportadora Sul </span><b class="record-entry">Entrada 08:42</b></div>
+            <div class="access-record"><strong>RTE-4A56</strong><span> Logística Central </span><b class="record-exit">Saída 08:16</b></div>
+            <div class="access-record"><strong>QWE-7B89</strong><span> Expresso Cargas </span><b class="record-entry">Entrada 07:55</b></div>
+            <div class="access-record"><strong>JKL-2C34</strong><span> Transportadora Sul </span><b class="record-entry">Entrada 07:31</b></div>
+        </aside>
+    </main>
+
+    <section class="bottom-grid">
+        <article class="panel"><h2>Conferência obrigatória</h2><p class="helper-text">Confira transportadora, motorista, caminhão e os pesos antes de concluir o registro.</p></article>
+        <article class="panel"><h2>Situação do pátio</h2><div class="yard-status"><span class="dot livre"></span><strong>08 veículos</strong><span> em operação</span></div></article>
+    </section>
+</div>
+<script>
+function updateClock() {
+    document.getElementById("clock").textContent = new Date().toLocaleTimeString("pt-BR");
+}
+setInterval(updateClock, 1000);
+updateClock();
+</script>
+</body>
+</html>

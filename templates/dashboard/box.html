@@ -1,0 +1,28 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boxes | Controle de Docas</title>
+    <link rel="stylesheet" href="{% static 'css/area.css' %}">
+</head>
+<body>
+    <main class="area-page area-placeholder">
+        <header class="window-bar">
+            <div class="brand-mark">CD</div>
+            <div>
+                <span class="eyebrow">LOGISTICS CONTROL TOWER</span>
+                <h1>Controle de Docas</h1>
+            </div>
+            <div class="window-actions" aria-hidden="true"><span>_</span><span>□</span><span>×</span></div>
+        </header>
+        <section class="placeholder-content">
+            <span class="tag">BOX</span>
+            <h2>Área de Boxes</h2>
+            <p>Este ambiente está reservado para usuários autorizados do grupo Box.</p>
+            <a class="back-link" href="{% url 'selecionar_area' %}">← Voltar para seleção</a>
+        </section>
+    </main>
+</body>
+</html>

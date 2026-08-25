@@ -14,7 +14,13 @@
             <div class="eyebrow">LOGISTICS CONTROL TOWER</div>
             <h1>Controle de Docas</h1>
         </div>
-        <div class="clock" id="clock">--:--:--</div>
+        <div class="topbar-actions">
+            <form method="post" action="{% url 'logout' %}">
+                {% csrf_token %}
+                <button class="area-link" type="submit">Sair</button>
+            </form>
+            <div class="clock" id="clock">--:--:--</div>
+        </div>
     </header>
 
     <section class="kpis">

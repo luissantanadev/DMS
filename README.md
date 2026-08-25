@@ -22,6 +22,10 @@ Sistema web para controle operacional de docas, desenvolvido com Django e prepar
 9. Histórico e auditoria
 10. Relatórios e gestão
 
+## Perfis de acesso
+
+Após criar os usuários, crie no admin os grupos `Portaria` e `Box` e associe cada usuário ao grupo correspondente. O login abre a seleção de área; usuários do grupo `Portaria` não recebem a opção Box e também não conseguem acessar essa URL diretamente. Usuários do grupo `Administradores` e superusuários podem acessar as duas áreas.
+
 ## Executar
 
 ```bash
