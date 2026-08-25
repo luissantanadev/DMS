@@ -15,6 +15,7 @@
             <h1>Controle de entrada e saída</h1>
         </div>
         <div class="topbar-actions">
+            {% if tem_box %}<a class="area-link" href="{% url 'box' %}">Box</a>{% endif %}
             <a class="area-link" href="{% url 'selecionar_area' %}">Trocar área</a>
             <form method="post" action="{% url 'logout' %}">
                 {% csrf_token %}
@@ -23,6 +24,14 @@
             <div class="clock" id="clock">--:--:--</div>
         </div>
     </header>
+
+    {% if messages %}
+    <section class="panel" style="margin-bottom:16px;">
+        {% for message in messages %}
+        <p style="margin:0; color:#107c10; font-weight:600;">{{ message }}</p>
+        {% endfor %}
+    </section>
+    {% endif %}
 
     <section class="kpis">
         <article><span>ENTRADAS HOJE</span><strong>24</strong></article>
@@ -39,35 +48,61 @@
                 <h2>Novo registro de acesso</h2>
                 <span class="panel-status">PORTARIA ONLINE</span>
             </div>
-            <form class="portaria-form">
+            <form class="portaria-form" method="post">
+                {% csrf_token %}
                 <div class="form-section">
                     <h3>Transportadora</h3>
                     <div class="form-grid">
-                        <label>Nome da transportadora<input type="text" placeholder="Razão social"></label>
-                        <label>CNPJ<input type="text" placeholder="00.000.000/0000-00"></label>
+                        <label>Transportadora
+                            <select name="transportadora" required>
+                                <option value="">Selecione uma transportadora</option>
+                                {% for transportadora in transportadoras %}
+                                <option value="{{ transportadora.id }}">{{ transportadora.nome_fantasia }} - {{ transportadora.cnpj }}</option>
+                                {% endfor %}
+                            </select>
+                        </label>
                     </div>
                 </div>
                 <div class="form-section">
                     <h3>Motorista</h3>
                     <div class="form-grid">
-                        <label>Nome completo<input type="text" placeholder="Nome do motorista"></label>
-                        <label>CPF<input type="text" placeholder="000.000.000-00"></label>
+                        <label>Nome completo<input type="text" name="motorista_nome" placeholder="Nome do motorista" required></label>
+                        <label>CPF<input type="text" name="motorista_cpf" placeholder="000.000.000-00"></label>
                     </div>
                 </div>
                 <div class="form-section">
                     <h3>Caminhão</h3>
                     <div class="form-grid three-columns">
-                        <label>Placa<input type="text" placeholder="ABC-1D23"></label>
-                        <label>Tipo<input type="text" placeholder="Carreta, truck..."></label>
-                        <label>Nota / carga<input type="text" placeholder="Número da carga"></label>
+                        <label>Placa<input type="text" name="placa" placeholder="ABC-1D23" required></label>
+                        <label>Tipo de operação
+                            <select name="tipo_operacao">
+                                <option value="recebimento">Recebimento</option>
+                                <option value="carregamento">Carregamento</option>
+                                <option value="transferencia">Transferência</option>
+                            </select>
+                        </label>
+                        <label>Nota / carga<input type="text" name="carga" placeholder="Número da carga"></label>
+                    </div>
+                </div>
+                <div class="form-section">
+                    <h3>Alocação operacional</h3>
+                    <div class="form-grid">
+                        <label>Doca / box
+                            <select name="doca">
+                                <option value="">Aguardar alocação no pátio</option>
+                                {% for doca in docas_livres %}
+                                <option value="{{ doca.id }}">{{ doca.codigo }}</option>
+                                {% endfor %}
+                            </select>
+                        </label>
                     </div>
                 </div>
                 <div class="form-section">
                     <h3>Pesagem</h3>
                     <div class="form-grid three-columns">
-                        <label>Peso de entrada (kg)<input type="number" placeholder="0"></label>
-                        <label>Peso de saída (kg)<input type="number" placeholder="0"></label>
-                        <label>Data e hora<input type="datetime-local"></label>
+                        <label>Peso de entrada (kg)<input type="number" name="peso_entrada" min="0" step="0.01" placeholder="0"></label>
+                        <label>Observações<input type="text" name="observacoes" placeholder="Observações da entrada"></label>
+                        <label>Data e hora<input type="datetime-local" name="entrada_em"></label>
                     </div>
                 </div>
                 <div class="form-actions">
@@ -79,12 +114,39 @@
 
         <aside class="panel side-panel">
             <div class="section-title"><h2>Últimos registros</h2><span class="panel-status">HOJE</span></div>
-            <div class="access-record"><strong>ABC-1D23</strong><span> Transportadora Sul </span><b class="record-entry">Entrada 08:42</b></div>
-            <div class="access-record"><strong>RTE-4A56</strong><span> Logística Central </span><b class="record-exit">Saída 08:16</b></div>
-            <div class="access-record"><strong>QWE-7B89</strong><span> Expresso Cargas </span><b class="record-entry">Entrada 07:55</b></div>
-            <div class="access-record"><strong>JKL-2C34</strong><span> Transportadora Sul </span><b class="record-entry">Entrada 07:31</b></div>
+            {% for movimentacao in movimentacoes %}
+            <div class="access-record"><strong>{{ movimentacao.placa }}</strong><span>{{ movimentacao.transportadora.nome_fantasia }}</span><b class="record-entry">{{ movimentacao.get_status_display }}</b></div>
+            {% empty %}
+            <p class="helper-text">Nenhum registro de acesso ainda.</p>
+            {% endfor %}
         </aside>
     </main>
+
+    <section class="panel operation-panel">
+        <div class="section-title">
+            <h2>Movimentações em andamento</h2>
+            <span class="panel-status">SAÍDA</span>
+        </div>
+        <div class="operation-list">
+            {% for movimentacao in movimentacoes %}
+            {% if movimentacao.status == "patio" or movimentacao.status == "em_operacao" %}
+            <div class="operation-row">
+                <div>
+                    <strong>{{ movimentacao.placa }}</strong>
+                    <span>{{ movimentacao.transportadora.nome_fantasia }}{% if movimentacao.doca %} • {{ movimentacao.doca.codigo }}{% endif %}</span>
+                </div>
+                <form method="post" action="{% url 'finalizar_movimentacao' movimentacao.id %}" class="exit-form">
+                    {% csrf_token %}
+                    <input type="number" name="peso_saida" min="0" step="0.01" placeholder="Peso de saída (kg)">
+                    <button class="primary-button" type="submit">Registrar saída</button>
+                </form>
+            </div>
+            {% endif %}
+            {% empty %}
+            <p class="helper-text">Nenhuma movimentação em andamento.</p>
+            {% endfor %}
+        </div>
+    </section>
 
     <section class="bottom-grid">
         <article class="panel"><h2>Conferência obrigatória</h2><p class="helper-text">Confira transportadora, motorista, caminhão e os pesos antes de concluir o registro.</p></article>

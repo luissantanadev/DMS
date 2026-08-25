@@ -4,17 +4,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Controle de Docas</title>
-    <link rel="stylesheet" href="{% static 'css/painel.css' %}">
+    <title>Painel de Boxes | Controle de Docas</title>
+    <link rel="stylesheet" href="{% static 'css/painel.css' %}?v=3">
 </head>
 <body>
 <div class="app">
     <header class="topbar">
         <div>
-            <div class="eyebrow">LOGISTICS CONTROL TOWER</div>
-            <h1>Controle de Docas</h1>
+            <div class="eyebrow">PAINEL TV • VISUALIZAÇÃO OPERACIONAL</div>
+            <h1>Painel de Boxes</h1>
         </div>
         <div class="topbar-actions">
+            <nav class="main-nav" aria-label="Navegação principal">
+                {% if tem_portaria %}<a class="nav-link" href="{% url 'portaria' %}">Portaria</a>{% endif %}
+                <a class="nav-link" href="{% url 'box' %}">Box</a>
+                <a class="nav-link" href="{% url 'selecionar_area' %}">Troca de área</a>
+            </nav>
             <form method="post" action="{% url 'logout' %}">
                 {% csrf_token %}
                 <button class="area-link" type="submit">Sair</button>
@@ -35,12 +40,13 @@
     <main class="content">
         <section class="dock-panel">
             <div class="section-title">
-                <h2>Mapa das Docas</h2>
+                <h2>Mapa dos Boxes</h2>
                 <div class="legend">
                     <span><i class="dot livre"></i> Livre</span>
                     <span><i class="dot recebimento"></i> Recebimento</span>
                     <span><i class="dot carregamento"></i> Carregamento</span>
                     <span><i class="dot separacao"></i> Separação</span>
+                    <span><i class="dot transferencia"></i> Transferência</span>
                     <span><i class="dot bloqueada"></i> Bloqueada</span>
                 </div>
             </div>

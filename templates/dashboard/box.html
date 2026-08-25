@@ -4,25 +4,56 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Boxes | Controle de Docas</title>
-    <link rel="stylesheet" href="{% static 'css/area.css' %}">
+    <title>Box | Controle de Docas</title>
+    <link rel="stylesheet" href="{% static 'css/painel.css' %}">
 </head>
 <body>
-    <main class="area-page area-placeholder">
-        <header class="window-bar">
-            <div class="brand-mark">CD</div>
-            <div>
-                <span class="eyebrow">LOGISTICS CONTROL TOWER</span>
-                <h1>Controle de Docas</h1>
-            </div>
-            <div class="window-actions" aria-hidden="true"><span>_</span><span>□</span><span>×</span></div>
-        </header>
-        <section class="placeholder-content">
-            <span class="tag">BOX</span>
-            <h2>Área de Boxes</h2>
-            <p>Este ambiente está reservado para usuários autorizados do grupo Box.</p>
-            <a class="back-link" href="{% url 'selecionar_area' %}">← Voltar para seleção</a>
-        </section>
+<div class="app">
+    <header class="topbar">
+        <div>
+            <div class="eyebrow">LOGISTICS CONTROL TOWER • BOX</div>
+            <h1>Gestão operacional</h1>
+        </div>
+        <div class="topbar-actions">
+            <nav class="main-nav" aria-label="Navegação principal">
+                <a class="nav-link" href="{% url 'painel' %}">Dashboard</a>
+                {% if tem_portaria %}<a class="nav-link" href="{% url 'portaria' %}">Portaria</a>{% endif %}
+                <a class="nav-link active" href="{% url 'box' %}">Box</a>
+                <a class="nav-link" href="{% url 'selecionar_area' %}">Troca de área</a>
+            </nav>
+            <form method="post" action="{% url 'logout' %}">
+                {% csrf_token %}
+                <button class="area-link" type="submit">Sair</button>
+            </form>
+        </div>
+    </header>
+
+    <section class="panel box-heading">
+        <span class="eyebrow">CENTRAL DE GESTÃO</span>
+        <h2>Cadastros, alterações e relatórios</h2>
+        <p class="helper-text">Administre os dados usados pela operação do DMS em um único ambiente.</p>
+    </section>
+
+    <main class="management-grid">
+        <a class="panel management-card" href="{% url 'gerenciar_docas' %}">
+            <span class="management-icon">▦</span>
+            <span class="management-content"><strong>Docas</strong><span>Cadastre docas e atualize seus status.</span></span>
+            <span class="area-arrow">→</span>
+        </a>
+        <a class="panel management-card" href="{% url 'lista_transportadoras' %}">
+            <span class="management-icon">▤</span>
+            <span class="management-content"><strong>Transportadoras</strong><span>Consulte as transportadoras ativas.</span></span>
+            <span class="area-arrow">→</span>
+        </a>
+        <div class="panel management-card disabled-card">
+            <span class="management-icon">♙</span>
+            <span class="management-content"><strong>Motoristas</strong><span>Cadastro disponível na próxima etapa.</span></span>
+        </div>
+        <div class="panel management-card disabled-card">
+            <span class="management-icon">▰</span>
+            <span class="management-content"><strong>Relatórios</strong><span>Indicadores e histórico operacional.</span></span>
+        </div>
     </main>
+</div>
 </body>
 </html>

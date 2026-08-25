@@ -6,6 +6,7 @@ class Doca(models.Model):
         ("recebimento", "Recebimento"),
         ("carregamento", "Carregamento"),
         ("separacao", "Em Separação"),
+        ("transferencia", "Transferência"),
         ("aguardando", "Aguardando"),
         ("atrasada", "Atrasada"),
         ("bloqueada", "Bloqueada"),

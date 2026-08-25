@@ -1,0 +1,97 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciar Docas</title>
+    <link rel="stylesheet" href="{% static 'css/painel.css' %}">
+</head>
+<body>
+<div class="app">
+    <header class="topbar">
+        <div>
+            <div class="eyebrow">LOGISTICS CONTROL TOWER • BOX</div>
+            <h1>Gerenciamento de Docas</h1>
+        </div>
+        <div class="topbar-actions">
+            <a class="area-link" href="{% url 'box' %}">Voltar para Box</a>
+            <a class="area-link" href="{% url 'selecionar_area' %}">Trocar área</a>
+            <form method="post" action="{% url 'logout' %}">
+                {% csrf_token %}
+                <button class="area-link" type="submit">Sair</button>
+            </form>
+        </div>
+    </header>
+
+    {% if messages %}
+    <section class="panel" style="margin-bottom: 16px;">
+        {% for message in messages %}
+        <p style="margin:0; color:#107c10; font-weight:600;">{{ message }}</p>
+        {% endfor %}
+    </section>
+    {% endif %}
+
+    <main class="portaria-grid">
+        <section class="panel registration-panel">
+            <div class="section-title">
+                <h2>Nova doca</h2>
+                <span class="panel-status">BOX</span>
+            </div>
+
+            <form method="post" class="portaria-form">
+                {% csrf_token %}
+                <div class="form-section">
+                    <div class="form-grid two-columns">
+                        <label>
+                            Código da doca
+                            <input type="text" name="codigo" maxlength="10" placeholder="D16" required>
+                        </label>
+                        <label>
+                            Status
+                            <select name="status" style="height:40px; border:1px solid #d4d9de; border-radius:7px; padding:0 11px; font:inherit;">
+                                <option value="livre">Livre</option>
+                                <option value="recebimento">Recebimento</option>
+                                <option value="carregamento">Carregamento</option>
+                                <option value="separacao">Em Separação</option>
+                                <option value="aguardando">Aguardando</option>
+                                <option value="bloqueada">Bloqueada</option>
+                                <option value="manual">Manual</option>
+                            </select>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <label style="display:flex; align-items:center; gap:10px; color:#555; font-size:13px;">
+                        <input type="checkbox" name="ativo" checked>
+                        Doca ativa
+                    </label>
+                </div>
+
+                <div class="form-actions">
+                    <button class="primary-button" type="submit">Salvar doca</button>
+                </div>
+            </form>
+        </section>
+
+        <aside class="panel side-panel">
+            <div class="section-title">
+                <h2>Docas cadastradas</h2>
+                <span class="panel-status">{{ docas|length }}</span>
+            </div>
+
+            {% for doca in docas %}
+            <div class="access-record">
+                <strong>{{ doca.codigo }}</strong>
+                <span>{{ doca.status|title }}</span>
+                <b class="record-entry">{% if doca.ativo %}Ativa{% else %}Inativa{% endif %}</b>
+            </div>
+            {% empty %}
+            <p class="helper-text">Nenhuma doca cadastrada ainda.</p>
+            {% endfor %}
+        </aside>
+    </main>
+</div>
+</body>
+</html>

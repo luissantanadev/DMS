@@ -25,6 +25,8 @@ INSTALLED_APPS = [
     "channels",
     "apps.docas",
     "apps.dashboard",
+    "apps.transportadoras",
+    "apps.operacao",
     "apps.integracao_wms",
 ]
 

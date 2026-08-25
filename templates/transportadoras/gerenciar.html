@@ -1,0 +1,76 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transportadoras | Controle de Docas</title>
+    <link rel="stylesheet" href="{% static 'css/painel.css' %}">
+</head>
+<body>
+<div class="app">
+    <header class="topbar">
+        <div>
+            <div class="eyebrow">LOGISTICS CONTROL TOWER • BOX</div>
+            <h1>Transportadoras</h1>
+        </div>
+        <div class="topbar-actions">
+            <a class="area-link" href="{% url 'box' %}">Voltar para Box</a>
+            <a class="area-link" href="{% url 'selecionar_area' %}">Trocar área</a>
+            <form method="post" action="{% url 'logout' %}">
+                {% csrf_token %}
+                <button class="area-link" type="submit">Sair</button>
+            </form>
+        </div>
+    </header>
+
+    <main class="portaria-grid">
+        <section class="panel registration-panel">
+            <div class="section-title">
+                <h2>Nova transportadora</h2>
+                <span class="panel-status">BOX</span>
+            </div>
+            <form method="post" class="portaria-form">
+                {% csrf_token %}
+                <div class="form-section">
+                    <div class="form-grid">
+                        <label>Razão social<input type="text" name="razao_social" maxlength="200" required></label>
+                        <label>Nome fantasia<input type="text" name="nome_fantasia" maxlength="200" required></label>
+                        <label>CNPJ<input type="text" name="cnpj" maxlength="18" placeholder="00.000.000/0000-00" required></label>
+                        <label>Telefone<input type="text" name="telefone" maxlength="20"></label>
+                    </div>
+                </div>
+                <div class="form-section">
+                    <label style="display:flex; align-items:center; gap:10px; color:#555; font-size:13px;">
+                        <input type="checkbox" name="ativa" checked>
+                        Transportadora ativa
+                    </label>
+                </div>
+                <div class="form-actions">
+                    <a class="secondary-button" href="{% url 'box' %}">Cancelar</a>
+                    <button class="primary-button" type="submit">Salvar transportadora</button>
+                </div>
+            </form>
+        </section>
+
+        <aside class="panel side-panel">
+            <div class="section-title">
+                <h2>Cadastradas</h2>
+                <span class="panel-status">{{ transportadoras|length }}</span>
+            </div>
+            {% for transportadora in transportadoras %}
+            <div class="access-record">
+                <strong>{{ transportadora.nome_fantasia }}</strong>
+                <span>{{ transportadora.cnpj }}</span>
+                <b class="{% if transportadora.ativa %}record-entry{% else %}record-exit{% endif %}">
+                    {% if transportadora.ativa %}Ativa{% else %}Inativa{% endif %}
+                </b>
+            </div>
+            {% empty %}
+            <p class="helper-text">Nenhuma transportadora cadastrada ainda.</p>
+            {% endfor %}
+        </aside>
+    </main>
+</div>
+</body>
+</html>
