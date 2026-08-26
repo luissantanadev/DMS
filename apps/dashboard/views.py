@@ -97,12 +97,21 @@ def painel(request):
     docas_livres = sum(1 for d in docas if d["status"] == "livre")
     docas_ocupadas = sum(1 for d in docas if d["status"] != "livre" and d["status"] != "bloqueada")
 
+    # Estatísticas de integração WMS
+    from apps.integracao_wms.models import SincronizacaoWMS
+    total_sincronizacoes = SincronizacaoWMS.objects.count()
+    sincronizacoes_sucesso = SincronizacaoWMS.objects.filter(status="sucesso").count()
+    sincronizacoes_erro = SincronizacaoWMS.objects.filter(status="erro").count()
+
     return render(request, "dashboard/painel.html", {
         "docas": docas,
         "docas_livres": docas_livres,
         "docas_ocupadas": docas_ocupadas,
         "alertas": alertas[:5],
         "tem_portaria": _has_area_access(request.user, "Portaria"),
+        "wms_total": total_sincronizacoes,
+        "wms_sucesso": sincronizacoes_sucesso,
+        "wms_erro": sincronizacoes_erro,
     })
 
 

@@ -149,6 +149,103 @@ hr { border:0; border-top:1px solid #eee; }
 .warning { background:#fff4ce; color:#8a6d00; }
 .info { background:#e5f1fb; color:#005a9e; }
 
+.wms-status-section {
+    margin-top:28px;
+    padding:20px;
+    background:#fff;
+    border:1px solid #e1e5e8;
+    border-radius:14px;
+    box-shadow:0 2px 8px rgba(0,0,0,.04);
+}
+
+.wms-status-container {
+    max-width:900px;
+    margin:0 auto;
+}
+
+.wms-status-container h2 {
+    text-align:center;
+    margin-bottom:24px;
+    font-size:17px;
+    color:#242424;
+}
+
+.wms-cards {
+    display:grid;
+    grid-template-columns:repeat(3, 1fr);
+    gap:20px;
+    justify-items:center;
+}
+
+.wms-card {
+    width:100%;
+    max-width:240px;
+    padding:20px;
+    border-radius:12px;
+    text-align:center;
+    border:2px solid #e1e5e8;
+    transition:.15s;
+}
+
+.wms-card:hover {
+    transform:translateY(-2px);
+    box-shadow:0 5px 15px rgba(0,0,0,.1);
+}
+
+.wms-card.total {
+    background:#f0f8ff;
+    border-color:#0078d4;
+}
+
+.wms-card.success {
+    background:#f0f8f0;
+    border-color:#107c10;
+}
+
+.wms-card.error {
+    background:#fff5f5;
+    border-color:#d13438;
+}
+
+.wms-value {
+    font-size:42px;
+    font-weight:700;
+    margin-bottom:8px;
+}
+
+.wms-card.total .wms-value { color:#0078d4; }
+.wms-card.success .wms-value { color:#107c10; }
+.wms-card.error .wms-value { color:#d13438; }
+
+.wms-label {
+    font-size:12px;
+    color:#666;
+    font-weight:700;
+    margin-bottom:12px;
+    text-transform:uppercase;
+    letter-spacing:0.5px;
+}
+
+.wms-percent {
+    font-size:14px;
+    color:#666;
+    margin-top:8px;
+}
+
+.wms-link {
+    display:inline-block;
+    margin-top:12px;
+    font-size:11px;
+    color:#0078d4;
+    text-decoration:none;
+    font-weight:700;
+    transition:.15s;
+}
+
+.wms-link:hover {
+    color:#005a9e;
+}
+
 @media(max-width:1000px) {
     .kpis { grid-template-columns:repeat(3,1fr); }
     .content,.portaria-grid,.bottom-grid { grid-template-columns:1fr; }

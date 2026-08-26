@@ -1,4 +1,5 @@
 {% load static %}
+{% load math_filters %}
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -106,6 +107,28 @@
                 {% endif %}
             </ul>
         </article>
+    </section>
+
+    <section class="wms-status-section">
+        <div class="wms-status-container">
+            <h2>Integração WMS</h2>
+            <div class="wms-cards">
+                <div class="wms-card total">
+                    <div class="wms-value">{{ wms_total }}</div>
+                    <div class="wms-label">Sincronizações</div>
+                </div>
+                <div class="wms-card success">
+                    <div class="wms-value">{{ wms_sucesso }}</div>
+                    <div class="wms-label">Bem-sucedidas</div>
+                        <div class="wms-percent">{% if wms_total > 0 %}{{ wms_sucesso|percentage:wms_total }}%{% else %}—{% endif %}</div>
+                </div>
+                <div class="wms-card error">
+                    <div class="wms-value">{{ wms_erro }}</div>
+                    <div class="wms-label">Com Erro</div>
+                    <a href="/admin/integracao_wms/sincronizacaowms/?status__exact=erro" class="wms-link">Ver erros →</a>
+                </div>
+            </div>
+        </div>
     </section>
 </div>
 
