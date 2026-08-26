@@ -10,4 +10,5 @@ urlpatterns = [
     path("painel/", include("apps.dashboard.urls")),
     path("docas/", include("apps.docas.urls")),
     path("transportadoras/", include("apps.transportadoras.urls")),
+    path("wms/", include("apps.integracao_wms.urls")),
 ]
