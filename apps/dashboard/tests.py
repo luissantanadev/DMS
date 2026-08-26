@@ -3,9 +3,17 @@ from django.contrib.messages.storage.fallback import FallbackStorage
 from django.core.exceptions import PermissionDenied
 from django.test import RequestFactory, TestCase
 
-from apps.dashboard.views import box, finalizar_movimentacao, painel, portaria, selecionar_area
+from apps.dashboard.views import (
+    box,
+    finalizar_movimentacao,
+    gerenciar_motoristas,
+    gerenciar_veiculos,
+    painel,
+    portaria,
+    selecionar_area,
+)
 from apps.docas.models import Doca
-from apps.operacao.models import Movimentacao
+from apps.operacao.models import Movimentacao, Motorista, Veiculo
 from apps.transportadoras.models import Transportadora
 
 
@@ -98,6 +106,95 @@ class AreaAccessTests(TestCase):
         doca.refresh_from_db()
         self.assertEqual(doca.status, "recebimento")
 
+    def test_box_referencia_motoristas_e_veiculos(self):
+        user = User.objects.create_user(username="box_cadastros", password="123")
+        group, _ = Group.objects.get_or_create(name="Box")
+        user.groups.add(group)
+
+        request = self.factory.get("/box/")
+        request.user = user
+
+        response = box(request)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Motoristas")
+        self.assertContains(response, "Veículos")
+
+    def test_portaria_registra_movimentacao_com_motorista_e_veiculo_cadastrados(self):
+        user = User.objects.create_user(username="portaria_cadastros", password="123")
+        group, _ = Group.objects.get_or_create(name="Portaria")
+        user.groups.add(group)
+        transportadora = Transportadora.objects.create(
+            razao_social="Logistica Central Ltda",
+            nome_fantasia="Central Log",
+            cnpj="77.888.999/0001-66",
+        )
+        motorista = Motorista.objects.create(nome="Joao da Silva", cpf="12345678909")
+        veiculo = Veiculo.objects.create(placa="XYZ1A23", modelo="Scania P/G", ano=2023)
+        doca = Doca.objects.create(codigo="D23", status="livre")
+
+        request = self.factory.post("/portaria/", {
+            "transportadora": transportadora.id,
+            "motorista": motorista.id,
+            "veiculo": veiculo.id,
+            "doca": doca.id,
+            "tipo_operacao": "carregamento",
+            "carga": "NF-3001",
+        })
+        request.user = user
+        request.session = {}
+        setattr(request, "_messages", FallbackStorage(request))
+
+        response = portaria(request)
+
+        self.assertEqual(response.status_code, 302)
+        doca.refresh_from_db()
+        movimentacao = Movimentacao.objects.get(veiculo=veiculo)
+        self.assertEqual(movimentacao.motorista, motorista)
+        self.assertEqual(movimentacao.veiculo, veiculo)
+        self.assertEqual(movimentacao.status, "em_operacao")
+        self.assertEqual(doca.status, "carregamento")
+
+    def test_gerenciar_motoristas_persiste_no_banco(self):
+        user = User.objects.create_user(username="box_motoristas", password="123")
+        group, _ = Group.objects.get_or_create(name="Box")
+        user.groups.add(group)
+
+        request = self.factory.post("/box/motoristas/", {
+            "nome": "Maria da Silva",
+            "cpf": "11122233344",
+            "telefone": "11999998888",
+            "ativo": "on",
+        })
+        request.user = user
+        request.session = {}
+        setattr(request, "_messages", FallbackStorage(request))
+
+        response = gerenciar_motoristas(request)
+
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(Motorista.objects.filter(nome="Maria da Silva", cpf="11122233344").exists())
+
+    def test_gerenciar_veiculos_persiste_no_banco(self):
+        user = User.objects.create_user(username="box_veiculos", password="123")
+        group, _ = Group.objects.get_or_create(name="Box")
+        user.groups.add(group)
+
+        request = self.factory.post("/box/veiculos/", {
+            "placa": "DEF4E56",
+            "modelo": "Mercedes Actros",
+            "ano": "2024",
+            "ativo": "on",
+        })
+        request.user = user
+        request.session = {}
+        setattr(request, "_messages", FallbackStorage(request))
+
+        response = gerenciar_veiculos(request)
+
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(Veiculo.objects.filter(placa="DEF4E56", modelo="Mercedes Actros").exists())
+
     def test_portaria_finaliza_movimentacao_e_libera_doca(self):
         user = User.objects.create_user(username="portaria_saida", password="123")
         group, _ = Group.objects.get_or_create(name="Portaria")
@@ -107,12 +204,14 @@ class AreaAccessTests(TestCase):
             nome_fantasia="Central Log",
             cnpj="98.765.432/0001-11",
         )
+        motorista = Motorista.objects.create(nome="Joao da Silva", cpf="11122233344")
+        veiculo = Veiculo.objects.create(placa="ABC1D23", modelo="Volvo FH", ano=2022)
         doca = Doca.objects.create(codigo="D22", status="recebimento")
         movimentacao = Movimentacao.objects.create(
             transportadora=transportadora,
             doca=doca,
-            motorista_nome="Joao da Silva",
-            placa="XYZ1A23",
+            motorista=motorista,
+            veiculo=veiculo,
             tipo_operacao="recebimento",
             status="em_operacao",
         )

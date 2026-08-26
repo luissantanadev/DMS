@@ -1,0 +1,75 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Motoristas | Controle de Docas</title>
+    <link rel="stylesheet" href="{% static 'css/painel.css' %}">
+</head>
+<body>
+<div class="app">
+    <header class="topbar">
+        <div>
+            <div class="eyebrow">LOGISTICS CONTROL TOWER • BOX</div>
+            <h1>Motoristas</h1>
+        </div>
+        <div class="topbar-actions">
+            <a class="area-link" href="{% url 'box' %}">Voltar para Box</a>
+            <a class="area-link" href="{% url 'selecionar_area' %}">Trocar área</a>
+            <form method="post" action="{% url 'logout' %}">
+                {% csrf_token %}
+                <button class="area-link" type="submit">Sair</button>
+            </form>
+        </div>
+    </header>
+
+    <main class="portaria-grid">
+        <section class="panel registration-panel">
+            <div class="section-title">
+                <h2>Novo motorista</h2>
+                <span class="panel-status">BOX</span>
+            </div>
+            <form method="post" class="portaria-form">
+                {% csrf_token %}
+                <div class="form-section">
+                    <div class="form-grid">
+                        <label>Nome<input type="text" name="nome" maxlength="200" required></label>
+                        <label>CPF<input type="text" name="cpf" maxlength="14" placeholder="000.000.000-00"></label>
+                        <label>Telefone<input type="text" name="telefone" maxlength="20" placeholder="(11) 99999-9999"></label>
+                    </div>
+                </div>
+                <div class="form-section">
+                    <label style="display:flex; align-items:center; gap:10px; color:#555; font-size:13px;">
+                        <input type="checkbox" name="ativo" checked>
+                        Motorista ativo
+                    </label>
+                </div>
+                <div class="form-actions">
+                    <a class="secondary-button" href="{% url 'box' %}">Cancelar</a>
+                    <button class="primary-button" type="submit">Salvar motorista</button>
+                </div>
+            </form>
+        </section>
+
+        <aside class="panel side-panel">
+            <div class="section-title">
+                <h2>Cadastrados</h2>
+                <span class="panel-status">{{ motoristas|length }}</span>
+            </div>
+            {% for motorista in motoristas %}
+            <div class="access-record">
+                <strong>{{ motorista.nome }}</strong>
+                <span>{% if motorista.cpf %}{{ motorista.cpf }}{% else %}CPF não informado{% endif %}</span>
+                <b class="{% if motorista.ativo %}record-entry{% else %}record-exit{% endif %}">
+                    {% if motorista.ativo %}Ativo{% else %}Inativo{% endif %}
+                </b>
+            </div>
+            {% empty %}
+            <p class="helper-text">Nenhum motorista cadastrado ainda.</p>
+            {% endfor %}
+        </aside>
+    </main>
+</div>
+</body>
+</html>

@@ -1,0 +1,75 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Veículos | Controle de Docas</title>
+    <link rel="stylesheet" href="{% static 'css/painel.css' %}">
+</head>
+<body>
+<div class="app">
+    <header class="topbar">
+        <div>
+            <div class="eyebrow">LOGISTICS CONTROL TOWER • BOX</div>
+            <h1>Veículos</h1>
+        </div>
+        <div class="topbar-actions">
+            <a class="area-link" href="{% url 'box' %}">Voltar para Box</a>
+            <a class="area-link" href="{% url 'selecionar_area' %}">Trocar área</a>
+            <form method="post" action="{% url 'logout' %}">
+                {% csrf_token %}
+                <button class="area-link" type="submit">Sair</button>
+            </form>
+        </div>
+    </header>
+
+    <main class="portaria-grid">
+        <section class="panel registration-panel">
+            <div class="section-title">
+                <h2>Novo veículo</h2>
+                <span class="panel-status">BOX</span>
+            </div>
+            <form method="post" class="portaria-form">
+                {% csrf_token %}
+                <div class="form-section">
+                    <div class="form-grid">
+                        <label>Placa<input type="text" name="placa" maxlength="10" placeholder="ABC1D23" required></label>
+                        <label>Modelo<input type="text" name="modelo" maxlength="100" placeholder="Scania P/G"></label>
+                        <label>Ano<input type="number" name="ano" min="1980" max="2100" placeholder="2024"></label>
+                    </div>
+                </div>
+                <div class="form-section">
+                    <label style="display:flex; align-items:center; gap:10px; color:#555; font-size:13px;">
+                        <input type="checkbox" name="ativo" checked>
+                        Veículo ativo
+                    </label>
+                </div>
+                <div class="form-actions">
+                    <a class="secondary-button" href="{% url 'box' %}">Cancelar</a>
+                    <button class="primary-button" type="submit">Salvar veículo</button>
+                </div>
+            </form>
+        </section>
+
+        <aside class="panel side-panel">
+            <div class="section-title">
+                <h2>Cadastrados</h2>
+                <span class="panel-status">{{ veiculos|length }}</span>
+            </div>
+            {% for veiculo in veiculos %}
+            <div class="access-record">
+                <strong>{{ veiculo.placa }}</strong>
+                <span>{% if veiculo.modelo %}{{ veiculo.modelo }}{% else %}Modelo não informado{% endif %}</span>
+                <b class="{% if veiculo.ativo %}record-entry{% else %}record-exit{% endif %}">
+                    {% if veiculo.ativo %}Ativo{% else %}Inativo{% endif %}
+                </b>
+            </div>
+            {% empty %}
+            <p class="helper-text">Nenhum veículo cadastrado ainda.</p>
+            {% endfor %}
+        </aside>
+    </main>
+</div>
+</body>
+</html>

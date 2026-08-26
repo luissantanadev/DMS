@@ -66,14 +66,36 @@
                 <div class="form-section">
                     <h3>Motorista</h3>
                     <div class="form-grid">
-                        <label>Nome completo<input type="text" name="motorista_nome" placeholder="Nome do motorista" required></label>
+                        <label>Motorista cadastrado
+                            <select name="motorista">
+                                <option value="">Selecione ou cadastre no campo abaixo</option>
+                                {% for motorista in motoristas %}
+                                <option value="{{ motorista.id }}">{{ motorista.nome }}{% if motorista.cpf %} • {{ motorista.cpf }}{% endif %}</option>
+                                {% endfor %}
+                            </select>
+                        </label>
+                        <label>Nome completo<input type="text" name="motorista_nome" placeholder="Nome do motorista"></label>
                         <label>CPF<input type="text" name="motorista_cpf" placeholder="000.000.000-00"></label>
                     </div>
                 </div>
                 <div class="form-section">
                     <h3>Caminhão</h3>
                     <div class="form-grid three-columns">
-                        <label>Placa<input type="text" name="placa" placeholder="ABC-1D23" required></label>
+                        <label>Veículo cadastrado
+                            <select name="veiculo">
+                                <option value="">Selecione ou informe abaixo</option>
+                                {% for veiculo in veiculos %}
+                                <option value="{{ veiculo.id }}">{{ veiculo.placa }}{% if veiculo.modelo %} • {{ veiculo.modelo }}{% endif %}</option>
+                                {% endfor %}
+                            </select>
+                        </label>
+                        <label>Placa<input type="text" name="placa" placeholder="ABC-1D23"></label>
+                        <label>Modelo<input type="text" name="veiculo_modelo" placeholder="Ex: Volvo FH"></label>
+                    </div>
+                </div>
+                <div class="form-section">
+                    <h3>Operação</h3>
+                    <div class="form-grid two-columns">
                         <label>Tipo de operação
                             <select name="tipo_operacao">
                                 <option value="recebimento">Recebimento</option>

@@ -45,14 +45,16 @@
             <span class="management-content"><strong>Transportadoras</strong><span>Consulte as transportadoras ativas.</span></span>
             <span class="area-arrow">→</span>
         </a>
-        <div class="panel management-card disabled-card">
+        <a class="panel management-card" href="{% url 'gerenciar_motoristas' %}">
             <span class="management-icon">♙</span>
-            <span class="management-content"><strong>Motoristas</strong><span>Cadastro disponível na próxima etapa.</span></span>
-        </div>
-        <div class="panel management-card disabled-card">
+            <span class="management-content"><strong>Motoristas</strong><span>Cadastre e mantenha os motoristas ativos.</span></span>
+            <span class="area-arrow">→</span>
+        </a>
+        <a class="panel management-card" href="{% url 'gerenciar_veiculos' %}">
             <span class="management-icon">▰</span>
-            <span class="management-content"><strong>Relatórios</strong><span>Indicadores e histórico operacional.</span></span>
-        </div>
+            <span class="management-content"><strong>Veículos</strong><span>Controle placas, modelos e frota cadastrada.</span></span>
+            <span class="area-arrow">→</span>
+        </a>
     </main>
 </div>
 </body>

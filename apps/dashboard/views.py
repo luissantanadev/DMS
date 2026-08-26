@@ -8,7 +8,7 @@ from django.shortcuts import redirect, render
 from django.utils import timezone
 
 from apps.docas.models import Doca
-from apps.operacao.models import Movimentacao
+from apps.operacao.models import Motorista, Movimentacao, Veiculo
 from apps.transportadoras.models import Transportadora
 
 
@@ -96,6 +96,52 @@ def box(request):
 
 
 @login_required
+def gerenciar_motoristas(request):
+    if not _has_area_access(request.user, "Box"):
+        raise PermissionDenied("Usuário sem acesso ao Box.")
+
+    if request.method == "POST":
+        Motorista.objects.update_or_create(
+            cpf=(request.POST.get("cpf") or "").strip() or None,
+            defaults={
+                "nome": (request.POST.get("nome") or "").strip(),
+                "telefone": (request.POST.get("telefone") or "").strip(),
+                "ativo": request.POST.get("ativo") == "on",
+            },
+        )
+        return redirect("gerenciar_motoristas")
+
+    motoristas = Motorista.objects.order_by("nome")
+    return render(request, "dashboard/motoristas.html", {
+        "motoristas": motoristas,
+        "tem_portaria": _has_area_access(request.user, "Portaria"),
+    })
+
+
+@login_required
+def gerenciar_veiculos(request):
+    if not _has_area_access(request.user, "Box"):
+        raise PermissionDenied("Usuário sem acesso ao Box.")
+
+    if request.method == "POST":
+        Veiculo.objects.update_or_create(
+            placa=(request.POST.get("placa") or "").strip().upper(),
+            defaults={
+                "modelo": (request.POST.get("modelo") or "").strip(),
+                "ano": int(request.POST.get("ano") or 0) or None,
+                "ativo": request.POST.get("ativo") == "on",
+            },
+        )
+        return redirect("gerenciar_veiculos")
+
+    veiculos = Veiculo.objects.order_by("placa")
+    return render(request, "dashboard/veiculos.html", {
+        "veiculos": veiculos,
+        "tem_portaria": _has_area_access(request.user, "Portaria"),
+    })
+
+
+@login_required
 def portaria(request):
     if not _has_area_access(request.user, "Portaria"):
         raise PermissionDenied("Usuário sem acesso à Portaria.")
@@ -103,11 +149,14 @@ def portaria(request):
     if request.method == "POST":
         transportadora_id = request.POST.get("transportadora")
         doca_id = request.POST.get("doca")
+        motorista_id = request.POST.get("motorista")
+        veiculo_id = request.POST.get("veiculo")
         motorista_nome = (request.POST.get("motorista_nome") or "").strip()
+        motorista_cpf = (request.POST.get("motorista_cpf") or "").strip()
         placa = (request.POST.get("placa") or "").strip().upper()
         tipo_operacao = request.POST.get("tipo_operacao") or "recebimento"
 
-        if not transportadora_id or not motorista_nome or not placa:
+        if not transportadora_id or (not motorista_id and not motorista_nome) or (not veiculo_id and not placa):
             messages.error(request, "Informe transportadora, motorista e placa.")
             return redirect("portaria")
 
@@ -116,6 +165,31 @@ def portaria(request):
         except Transportadora.DoesNotExist:
             messages.error(request, "Selecione uma transportadora ativa.")
             return redirect("portaria")
+
+        if motorista_id:
+            try:
+                motorista = Motorista.objects.get(id=motorista_id, ativo=True)
+            except Motorista.DoesNotExist:
+                messages.error(request, "Selecione um motorista ativo.")
+                return redirect("portaria")
+        else:
+            motorista = Motorista.objects.filter(nome__iexact=motorista_nome).first()
+            if not motorista:
+                motorista = Motorista.objects.create(nome=motorista_nome, cpf=motorista_cpf)
+            elif motorista_cpf and not motorista.cpf:
+                motorista.cpf = motorista_cpf
+                motorista.save(update_fields=("cpf",))
+
+        if veiculo_id:
+            try:
+                veiculo = Veiculo.objects.get(id=veiculo_id, ativo=True)
+            except Veiculo.DoesNotExist:
+                messages.error(request, "Selecione um veículo ativo.")
+                return redirect("portaria")
+        else:
+            veiculo = Veiculo.objects.filter(placa__iexact=placa).first()
+            if not veiculo:
+                veiculo = Veiculo.objects.create(placa=placa, modelo=request.POST.get("veiculo_modelo", "").strip())
 
         doca = None
         if doca_id:
@@ -137,9 +211,11 @@ def portaria(request):
         movimentacao = Movimentacao.objects.create(
             transportadora=transportadora,
             doca=doca,
-            motorista_nome=motorista_nome,
-            motorista_cpf=(request.POST.get("motorista_cpf") or "").strip(),
-            placa=placa,
+            motorista=motorista,
+            veiculo=veiculo,
+            motorista_nome=motorista.nome,
+            motorista_cpf=motorista.cpf,
+            placa=veiculo.placa,
             carga=(request.POST.get("carga") or "").strip(),
             tipo_operacao=tipo_operacao,
             peso_entrada=request.POST.get("peso_entrada") or None,
@@ -150,12 +226,14 @@ def portaria(request):
         if doca:
             doca.status = tipo_operacao
             doca.save(update_fields=("status",))
-        messages.success(request, f"Entrada do veículo {placa} registrada com sucesso.")
+        messages.success(request, f"Entrada do veículo {veiculo.placa} registrada com sucesso.")
         return redirect("portaria")
 
-    movimentacoes = Movimentacao.objects.select_related("transportadora", "doca")[:8]
+    movimentacoes = Movimentacao.objects.select_related("transportadora", "doca", "motorista", "veiculo")[:8]
     return render(request, "dashboard/portaria.html", {
         "transportadoras": Transportadora.objects.filter(ativa=True).order_by("nome_fantasia"),
+        "motoristas": Motorista.objects.filter(ativo=True).order_by("nome"),
+        "veiculos": Veiculo.objects.filter(ativo=True).order_by("placa"),
         "docas_livres": Doca.objects.filter(ativo=True, status="livre").order_by("codigo"),
         "movimentacoes": movimentacoes,
         "tem_box": _has_area_access(request.user, "Box"),

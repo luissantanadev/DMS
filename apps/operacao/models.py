@@ -4,6 +4,36 @@ from apps.docas.models import Doca
 from apps.transportadoras.models import Transportadora
 
 
+class Motorista(models.Model):
+    nome = models.CharField(max_length=200)
+    cpf = models.CharField(max_length=14, unique=True, blank=True)
+    telefone = models.CharField(max_length=20, blank=True)
+    ativo = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ("nome",)
+        verbose_name = "Motorista"
+        verbose_name_plural = "Motoristas"
+
+    def __str__(self):
+        return self.nome
+
+
+class Veiculo(models.Model):
+    placa = models.CharField(max_length=10, unique=True)
+    modelo = models.CharField(max_length=100, blank=True)
+    ano = models.PositiveIntegerField(null=True, blank=True)
+    ativo = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ("placa",)
+        verbose_name = "Veículo"
+        verbose_name_plural = "Veículos"
+
+    def __str__(self):
+        return self.placa
+
+
 class Movimentacao(models.Model):
     TIPO_OPERACAO_CHOICES = [
         ("recebimento", "Recebimento"),
@@ -30,9 +60,23 @@ class Movimentacao(models.Model):
         null=True,
         blank=True,
     )
-    motorista_nome = models.CharField(max_length=200)
+    motorista = models.ForeignKey(
+        Motorista,
+        on_delete=models.PROTECT,
+        related_name="movimentacoes",
+        null=True,
+        blank=True,
+    )
+    veiculo = models.ForeignKey(
+        Veiculo,
+        on_delete=models.PROTECT,
+        related_name="movimentacoes",
+        null=True,
+        blank=True,
+    )
+    motorista_nome = models.CharField(max_length=200, blank=True)
     motorista_cpf = models.CharField(max_length=14, blank=True)
-    placa = models.CharField(max_length=8)
+    placa = models.CharField(max_length=10, blank=True)
     carga = models.CharField(max_length=100, blank=True)
     tipo_operacao = models.CharField(max_length=20, choices=TIPO_OPERACAO_CHOICES)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="aguardando")
@@ -50,4 +94,5 @@ class Movimentacao(models.Model):
         verbose_name_plural = "Movimentações"
 
     def __str__(self):
-        return f"{self.placa} - {self.get_tipo_operacao_display()}"
+        placa = self.veiculo.placa if self.veiculo else self.placa or "-"
+        return f"{placa} - {self.get_tipo_operacao_display()}"
