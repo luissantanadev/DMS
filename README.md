@@ -1,6 +1,6 @@
 # DMS - Controle de Docas
 
-Sistema web para controle operacional de docas e boxes, desenvolvido com Django e preparado para integração com WMS.
+Sistema web para controle operacional de docas e boxes, desenvolvido com Django e integrado a um WMS por webhook.
 
 ## Objetivo
 
@@ -27,6 +27,10 @@ Registra a entrada do veículo, transportadora, motorista, carga, tipo de opera�
 
 Central administrativa para usuários autorizados. Reúne cadastros, alterações, consultas e futuros relatórios.
 
+### Integração WMS
+
+Recebe movimentações do WMS por webhook, converte os dados para o formato do DMS e registra cada sincronização para auditoria. O monitoramento das sincronizações fica disponível exclusivamente na tela de administração do Django, em `/admin/integracao_wms/sincronizacaowms/`.
+
 ## Fluxo operacional
 
 1. O usuário acessa o sistema e faz login.
@@ -46,7 +50,7 @@ apps/
 ├── docas/              # modelo e gerenciamento de docas
 ├── operacao/           # movimentações operacionais
 ├── transportadoras/    # cadastro e consulta de transportadoras
-└── integracao_wms/     # base para integração futura
+└── integracao_wms/     # webhook, mapeamento e auditoria da integração WMS
 
 config/                 # configurações, URLs, WSGI e ASGI
 templates/              # telas HTML do sistema
@@ -65,7 +69,12 @@ static/css/             # estilos das telas
 | `/docas/gerenciar/` | Cadastro e alteração de docas |
 | `/transportadoras/` | Cadastro e consulta de transportadoras |
 | `/transportadoras/api/` | API de transportadoras ativas |
+| `/wms/webhook/` | Recebe eventos do WMS por POST |
+| `/wms/api/sincronizacoes/` | Lista sincronizações registradas |
+| `/wms/api/sincronizacoes/<shipment_id>/` | Consulta uma sincronização específica |
 | `/admin/` | Administração Django |
+
+O acompanhamento visual das sincronizações é feito pelo Django Admin. Os endpoints de API são destinados à integração e à consulta técnica.
 
 ## Permissões
 
@@ -117,16 +126,17 @@ Configure as credenciais do PostgreSQL no arquivo `.env`. Esse arquivo não deve
 
 ```bash
 python manage.py test apps.dashboard.tests apps.operacao.tests apps.transportadoras.tests apps.docas.tests
+python manage.py test apps.integracao_wms.tests
 python manage.py check
 ```
 
-Os testes cobrem permissões, cadastros, entrada, alocação de doca, saída e liberação automática.
+Os testes cobrem permissões, cadastros, entrada, alocação de doca, saída, liberação automática, mapeamento WMS, webhook e auditoria das sincronizações.
 
 ## Próximas etapas
 
 - cadastro separado de motoristas;
 - cadastro separado de veículos;
-- histórico e auditoria;
-- relatórios operacionais;
-- atualização do Painel TV em tempo real;
-- integração com WMS.
+- atualização automática do Painel TV;
+- notificações operacionais para alertas críticos;
+- autenticação e assinatura dos webhooks do WMS;
+- expansão dos relatórios operacionais.
