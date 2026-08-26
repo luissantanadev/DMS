@@ -1,7 +1,10 @@
+from datetime import timedelta
+
 from django.contrib.auth.models import Group, User
 from django.contrib.messages.storage.fallback import FallbackStorage
 from django.core.exceptions import PermissionDenied
 from django.test import RequestFactory, TestCase
+from django.utils import timezone
 
 from apps.dashboard.views import (
     box,
@@ -203,7 +206,46 @@ class AreaAccessTests(TestCase):
         self.assertContains(response, "Entrada registrada")
         self.assertContains(response, "Saída registrada")
 
-    def test_portaria_registra_movimentacao_com_motorista_e_veiculo_cadastrados(self):
+    def test_painel_exibe_timers_e_alertas_inteligentes(self):
+        user = User.objects.create_user(username="box_painel", password="123")
+        group, _ = Group.objects.get_or_create(name="Box")
+        user.groups.add(group)
+        transportadora = Transportadora.objects.create(
+            razao_social="Logistica Rapida Ltda",
+            nome_fantasia="Rapida Log",
+            cnpj="11.222.333/0001-44",
+        )
+        motorista = Motorista.objects.create(nome="Pedro Costa", cpf="44455566677")
+        veiculo = Veiculo.objects.create(placa="ABC9Z99", modelo="Scania P")
+        doca = Doca.objects.create(codigo="D50", status="patio", ativo=True)
+
+        entrada_tempo_atraso = timezone.now() - timedelta(minutes=35)
+        Movimentacao.objects.create(
+            transportadora=transportadora,
+            doca=doca,
+            motorista=motorista,
+            veiculo=veiculo,
+            motorista_nome="Pedro Costa",
+            motorista_cpf="44455566677",
+            placa="ABC9Z99",
+            carga="NF-8001",
+            tipo_operacao="recebimento",
+            status="patio",
+            entrada_em=entrada_tempo_atraso,
+        )
+
+        request = self.factory.get("/painel/")
+        request.user = user
+        request.session = {}
+        setattr(request, "_messages", FallbackStorage(request))
+
+        response = painel(request)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "ABC9Z99")
+        self.assertContains(response, "Aguardando")
+
+    def test_portaria_registra_entrada_com_motorista_e_veiculo_cadastrados(self):
         user = User.objects.create_user(username="portaria_cadastros", password="123")
         group, _ = Group.objects.get_or_create(name="Portaria")
         user.groups.add(group)

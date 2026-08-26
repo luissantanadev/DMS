@@ -30,9 +30,9 @@
 
     <section class="kpis">
         <article><span>DOCAS</span><strong>{{ docas|length }}</strong></article>
-        <article><span>LIVRES</span><strong id="kpi-livres">0</strong></article>
-        <article><span>OCUPADAS</span><strong id="kpi-ocupadas">0</strong></article>
-        <article class="danger"><span>ATRASADAS</span><strong>2</strong></article>
+        <article><span>LIVRES</span><strong id=\"kpi-livres\">{{ docas_livres }}</strong></article>
+        <article><span>OCUPADAS</span><strong id=\"kpi-ocupadas\">{{ docas_ocupadas }}</strong></article>
+        <article class=\"danger\"><span>COM ALERTA</span><strong id=\"kpi-alertas\">{{ alertas|length }}</strong></article>
         <article class="inbound"><span>INBOUND</span><strong>162.558</strong></article>
         <article class="outbound"><span>OUTBOUND</span><strong>97.235</strong></article>
     </section>
@@ -53,7 +53,7 @@
 
             <div class="dock-grid">
                 {% for doca in docas %}
-                <article class="dock-card {{ doca.status }}" onclick="selecionarDoca('{{ doca.codigo }}')">
+                <article class="dock-card {{ doca.status }}{% if doca.alerta %} alert-active{% endif %}" onclick="selecionarDoca('{{ doca.codigo }}')">
                     <div class="dock-head">
                         <strong>{{ doca.codigo }}</strong>
                         <span class="status-label">{{ doca.status|title }}</span>
@@ -61,6 +61,8 @@
                     <div class="dock-body">
                         <div class="load">{{ doca.carga|default:"—" }}</div>
                         <div class="time">{{ doca.hora|default:"Disponível" }}</div>
+                        {% if doca.duracao_minutos %}<div class="duration">{{ doca.duracao_minutos }}m</div>{% endif %}
+                        {% if doca.alerta %}<div class="alert-badge">{{ doca.alerta }}</div>{% endif %}
                     </div>
                     <div class="dock-footer">WMS • ONLINE</div>
                 </article>
@@ -95,9 +97,13 @@
         <article class="panel">
             <h2>Alertas Operacionais</h2>
             <ul class="alerts">
-                <li class="critical">D04 aguardando ação há 28 minutos</li>
-                <li class="warning">Carga 9700418515 próxima do SLA</li>
-                <li class="info">03 docas disponíveis</li>
+                {% if alertas %}
+                    {% for alerta in alertas %}
+                    <li class=\"{% if 'Aguardando' in alerta %}warning{% elif 'prolongada' in alerta %}critical{% else %}info{% endif %}\">{{ alerta }}</li>
+                    {% endfor %}
+                {% else %}
+                    <li class=\"info\">Nenhum alerta no momento</li>
+                {% endif %}
             </ul>
         </article>
     </section>

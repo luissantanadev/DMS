@@ -84,12 +84,15 @@ h2 { margin:0; font-size:17px; }
 .dock-card.separacao { border-color:#ffb900; }
 .dock-card.transferencia { border-color:#008272 !important; }
 .dock-card.bloqueada { border-color:#333; background:#eee; }
+.dock-card.alert-active { border-color:#d13438 !important; background:#fff5f5; }
 .dock-head { display:flex; justify-content:space-between; align-items:center; }
 .dock-head strong { font-size:18px; }
 .status-label { font-size:9px; text-transform:uppercase; font-weight:700; }
 .dock-body { margin-top:18px; }
 .load { font-weight:700; font-size:15px; }
 .time { color:#666; margin-top:5px; font-size:13px; }
+.duration { color:#d13438; font-weight:700; font-size:11px; margin-top:3px; }
+.alert-badge { background:#d13438; color:#fff; padding:3px 7px; border-radius:4px; font-size:9px; font-weight:700; margin-top:5px; display:inline-block; }
 .dock-footer { margin-top:12px; color:#888; font-size:9px; }
 
 .side-panel h2 { margin-bottom:14px; }

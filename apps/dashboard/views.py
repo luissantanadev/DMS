@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -39,7 +39,7 @@ def painel(request):
         raise PermissionDenied("Usuário sem acesso ao Box.")
 
     docas = list(
-        Doca.objects.filter(ativo=True).order_by("codigo").values("codigo", "status")
+        Doca.objects.filter(ativo=True).order_by("codigo").values("id", "codigo", "status")
     )
 
     movimentacoes_ativas = {
@@ -52,35 +52,56 @@ def painel(request):
 
     if not docas:
         docas = [
-            {"codigo": "D01", "status": "livre"},
-            {"codigo": "D02", "status": "carregamento"},
-            {"codigo": "D03", "status": "recebimento"},
-            {"codigo": "D04", "status": "bloqueada"},
-            {"codigo": "D05", "status": "recebimento"},
-            {"codigo": "D06", "status": "recebimento"},
-            {"codigo": "D07", "status": "livre"},
-            {"codigo": "D08", "status": "carregamento"},
-            {"codigo": "D09", "status": "recebimento"},
-            {"codigo": "D10", "status": "carregamento"},
-            {"codigo": "D11", "status": "manual"},
-            {"codigo": "D12", "status": "livre"},
-            {"codigo": "D13", "status": "separacao"},
-            {"codigo": "D14", "status": "separacao"},
-            {"codigo": "D15", "status": "livre"},
+            {"id": 1, "codigo": "D01", "status": "livre"},
+            {"id": 2, "codigo": "D02", "status": "carregamento"},
+            {"id": 3, "codigo": "D03", "status": "recebimento"},
+            {"id": 4, "codigo": "D04", "status": "bloqueada"},
+            {"id": 5, "codigo": "D05", "status": "recebimento"},
+            {"id": 6, "codigo": "D06", "status": "recebimento"},
+            {"id": 7, "codigo": "D07", "status": "livre"},
+            {"id": 8, "codigo": "D08", "status": "carregamento"},
+            {"id": 9, "codigo": "D09", "status": "recebimento"},
+            {"id": 10, "codigo": "D10", "status": "carregamento"},
+            {"id": 11, "codigo": "D11", "status": "manual"},
+            {"id": 12, "codigo": "D12", "status": "livre"},
+            {"id": 13, "codigo": "D13", "status": "separacao"},
+            {"id": 14, "codigo": "D14", "status": "separacao"},
+            {"id": 15, "codigo": "D15", "status": "livre"},
         ]
 
+    alertas = []
+    now = timezone.now()
     for doca in docas:
         doca.setdefault("carga", "")
         doca.setdefault("hora", "")
+        doca.setdefault("duracao_minutos", 0)
+        doca.setdefault("alerta", "")
         movimentacao = movimentacoes_ativas.get(doca["codigo"])
         if movimentacao:
             doca["carga"] = f"{movimentacao.placa}"
             if movimentacao.carga:
                 doca["carga"] += f" • {movimentacao.carga}"
-            doca["hora"] = movimentacao.entrada_em.strftime("%H:%M") if movimentacao.entrada_em else "Em operação"
+            if movimentacao.entrada_em:
+                duracao = (now - movimentacao.entrada_em).total_seconds() / 60
+                doca["duracao_minutos"] = int(duracao)
+                doca["hora"] = movimentacao.entrada_em.strftime("%H:%M")
+                if doca["status"] == "patio" and duracao > 20:
+                    doca["alerta"] = "Aguardando ação"
+                    alertas.append(f"{doca['codigo']} aguardando há {doca['duracao_minutos']} min")
+                elif doca["status"] == "em_operacao" and duracao > 60:
+                    doca["alerta"] = "Operação prolongada"
+                    alertas.append(f"{doca['codigo']} em operação há {doca['duracao_minutos']} min")
+            else:
+                doca["hora"] = "Em operação"
+
+    docas_livres = sum(1 for d in docas if d["status"] == "livre")
+    docas_ocupadas = sum(1 for d in docas if d["status"] != "livre" and d["status"] != "bloqueada")
 
     return render(request, "dashboard/painel.html", {
         "docas": docas,
+        "docas_livres": docas_livres,
+        "docas_ocupadas": docas_ocupadas,
+        "alertas": alertas[:5],
         "tem_portaria": _has_area_access(request.user, "Portaria"),
     })
 
