@@ -1,0 +1,129 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relatórios operacionais | Controle de Docas</title>
+    <link rel="stylesheet" href="{% static 'css/painel.css' %}?v=6">
+</head>
+<body>
+<div class="app">
+    <header class="topbar">
+        <div>
+            <div class="eyebrow">OPERATIONS REPORTING • BOX</div>
+            <h1>Relatórios operacionais</h1>
+        </div>
+        <div class="topbar-actions">
+            <nav class="main-nav" aria-label="Navegação principal">
+                <a class="nav-link" href="{% url 'painel' %}">Dashboard</a>
+                {% if tem_portaria %}<a class="nav-link" href="{% url 'portaria' %}">Portaria</a>{% endif %}
+                <a class="nav-link active" href="{% url 'box' %}">Box</a>
+                <a class="nav-link" href="{% url 'selecionar_area' %}">Troca de área</a>
+            </nav>
+            <form method="post" action="{% url 'logout' %}">
+                {% csrf_token %}
+                <button class="area-link" type="submit">Sair</button>
+            </form>
+        </div>
+    </header>
+
+    <section class="panel box-heading">
+        <span class="eyebrow">INDICADORES</span>
+        <h2>Filtro de operação</h2>
+        <p class="helper-text">Acompanhe volumes, status e movimentos por origem da operação.</p>
+    </section>
+
+    <section class="kpis">
+        <article><span>TOTAL</span><strong>{{ total_movimentacoes }}</strong></article>
+        <article><span>EM OPERAÇÃO</span><strong>{{ em_operacao }}</strong></article>
+        <article><span>FINALIZADAS</span><strong>{{ finalizadas }}</strong></article>
+        <article><span>AGUARDANDO</span><strong>{{ aguardando }}</strong></article>
+        <article><span>RECEBIMENTOS</span><strong>{{ recebimentos }}</strong></article>
+        <article><span>CARREGAMENTOS</span><strong>{{ carregamentos }}</strong></article>
+    </section>
+
+    <main class="portaria-grid">
+        <section class="panel registration-panel">
+            <div class="section-title">
+                <h2>Indicadores</h2>
+                <span class="panel-status">LIVE</span>
+            </div>
+
+            <form method="get" class="portaria-form">
+                <div class="form-section">
+                    <h3>Filtros</h3>
+                    <div class="form-grid three-columns">
+                        <label>
+                            Status
+                            <select name="status">
+                                <option value="">Todos</option>
+                                <option value="aguardando" {% if filtro_status == 'aguardando' %}selected{% endif %}>Aguardando</option>
+                                <option value="patio" {% if filtro_status == 'patio' %}selected{% endif %}>No pátio</option>
+                                <option value="em_operacao" {% if filtro_status == 'em_operacao' %}selected{% endif %}>Em operação</option>
+                                <option value="finalizada" {% if filtro_status == 'finalizada' %}selected{% endif %}>Finalizada</option>
+                            </select>
+                        </label>
+                        <label>
+                            Tipo
+                            <select name="tipo_operacao">
+                                <option value="">Todos</option>
+                                <option value="recebimento" {% if filtro_tipo == 'recebimento' %}selected{% endif %}>Recebimento</option>
+                                <option value="carregamento" {% if filtro_tipo == 'carregamento' %}selected{% endif %}>Carregamento</option>
+                                <option value="transferencia" {% if filtro_tipo == 'transferencia' %}selected{% endif %}>Transferência</option>
+                            </select>
+                        </label>
+                        <label>
+                            Doca
+                            <input type="text" name="doca" value="{{ filtro_doca|default:'' }}" placeholder="Ex.: D10">
+                        </label>
+                    </div>
+                    <div class="form-grid" style="margin-top:12px;">
+                        <label>
+                            Placa
+                            <input type="text" name="placa" value="{{ filtro_placa|default:'' }}" placeholder="Ex.: ABC1D23">
+                        </label>
+                        <div class="form-actions" style="padding-top:0; justify-content:flex-start; align-items:end;">
+                            <button class="primary-button" type="submit">Aplicar filtros</button>
+                            <a class="secondary-button" href="{% url 'gerenciar_relatorios' %}" style="display:inline-flex;align-items:center;justify-content:center;text-decoration:none;">Limpar</a>
+                        </div>
+                    </div>
+                </div>
+            </form>
+
+            <div class="operation-panel">
+                <h3>Movimentações encontradas</h3>
+                {% if movimentacoes %}
+                    {% for movimentacao in movimentacoes %}
+                    <div class="operation-row">
+                        <div>
+                            <strong>{{ movimentacao.placa|default:movimentacao.veiculo.placa|default:'Sem placa' }}</strong>
+                            <span>{{ movimentacao.transportadora.nome_fantasia }} • {{ movimentacao.doca.codigo|default:'Pátio' }} • {{ movimentacao.get_tipo_operacao_display }}</span>
+                        </div>
+                        <div>
+                            <span class="record-entry">{{ movimentacao.get_status_display }}</span>
+                            <small>{{ movimentacao.entrada_em|date:'d/m/Y H:i'|default:'Sem entrada' }}</small>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="helper-text">Nenhuma movimentação encontrada com os filtros aplicados.</p>
+                {% endif %}
+            </div>
+        </section>
+
+        <aside class="side-panel">
+            <h2>Resumo operacional</h2>
+            <div class="metric"><span>Movimentações</span><strong>{{ total_movimentacoes }}</strong></div>
+            <div class="metric"><span>Em operação</span><strong>{{ em_operacao }}</strong></div>
+            <div class="metric"><span>Finalizadas</span><strong>{{ finalizadas }}</strong></div>
+            <div class="metric"><span>Aguardando</span><strong>{{ aguardando }}</strong></div>
+            <hr>
+            <div class="metric small"><span>Recebimento</span><strong>{{ recebimentos }}</strong></div>
+            <div class="metric small"><span>Carregamento</span><strong>{{ carregamentos }}</strong></div>
+            <div class="metric small"><span>Disponível</span><strong>{{ aguardando }}</strong></div>
+        </aside>
+    </main>
+</div>
+</body>
+</html>

@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Motorista, Movimentacao, Veiculo
+from .models import HistoricoMovimentacao, Motorista, Movimentacao, Veiculo
 
 
 @admin.register(Motorista)
@@ -15,6 +15,13 @@ class VeiculoAdmin(admin.ModelAdmin):
     list_display = ("placa", "modelo", "ano", "ativo")
     list_filter = ("ativo",)
     search_fields = ("placa", "modelo")
+
+
+@admin.register(HistoricoMovimentacao)
+class HistoricoMovimentacaoAdmin(admin.ModelAdmin):
+    list_display = ("movimentacao", "acao", "descricao", "criado_em")
+    list_filter = ("acao",)
+    search_fields = ("descricao", "movimentacao__placa")
 
 
 @admin.register(Movimentacao)

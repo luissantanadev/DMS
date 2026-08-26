@@ -1,0 +1,54 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Histórico | Controle de Docas</title>
+    <link rel="stylesheet" href="{% static 'css/painel.css' %}">
+</head>
+<body>
+<div class="app">
+    <header class="topbar">
+        <div>
+            <div class="eyebrow">LOGISTICS CONTROL TOWER • BOX</div>
+            <h1>Histórico e auditoria</h1>
+        </div>
+        <div class="topbar-actions">
+            <a class="area-link" href="{% url 'box' %}">Voltar para Box</a>
+            <a class="area-link" href="{% url 'selecionar_area' %}">Trocar área</a>
+            <form method="post" action="{% url 'logout' %}">
+                {% csrf_token %}
+                <button class="area-link" type="submit">Sair</button>
+            </form>
+        </div>
+    </header>
+
+    <main class="portaria-grid">
+        <section class="panel registration-panel" style="grid-column: 1 / -1;">
+            <div class="section-title">
+                <h2>Movimentações registradas</h2>
+                <span class="panel-status">{{ historico|length }}</span>
+            </div>
+
+            <div class="operation-list">
+                {% for evento in historico %}
+                <div class="operation-row">
+                    <div>
+                        <strong>{{ evento.movimentacao.veiculo.placa|default:evento.movimentacao.placa }}</strong>
+                        <span>{{ evento.movimentacao.transportadora.nome_fantasia }} • {{ evento.movimentacao.doca.codigo|default:'Sem doca' }} • {{ evento.movimentacao.get_tipo_operacao_display }}</span>
+                    </div>
+                    <div>
+                        <b class="record-entry">{{ evento.get_acao_display }}</b>
+                        <small>{{ evento.descricao }} • {{ evento.criado_em|date:'d/m/Y H:i' }}</small>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="helper-text">Nenhuma movimentação registrada ainda.</p>
+                {% endfor %}
+            </div>
+        </section>
+    </main>
+</div>
+</body>
+</html>

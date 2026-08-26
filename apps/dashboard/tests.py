@@ -6,7 +6,9 @@ from django.test import RequestFactory, TestCase
 from apps.dashboard.views import (
     box,
     finalizar_movimentacao,
+    gerenciar_historico,
     gerenciar_motoristas,
+    gerenciar_relatorios,
     gerenciar_veiculos,
     painel,
     portaria,
@@ -119,6 +121,87 @@ class AreaAccessTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Motoristas")
         self.assertContains(response, "Veículos")
+
+    def test_gerenciar_relatorios_exibe_filtros_e_indicadores(self):
+        user = User.objects.create_user(username="box_relatorios", password="123")
+        group, _ = Group.objects.get_or_create(name="Box")
+        user.groups.add(group)
+
+        transportadora = Transportadora.objects.create(
+            razao_social="Operacao Norte Ltda",
+            nome_fantasia="Norte Log",
+            cnpj="88.123.456/0001-01",
+        )
+        motorista = Motorista.objects.create(nome="Carlos Nunes", cpf="33344455566")
+        veiculo = Veiculo.objects.create(placa="QWE7T89", modelo="Volvo FM")
+        doca = Doca.objects.create(codigo="D30", status="recebimento", ativo=True)
+        Movimentacao.objects.create(
+            transportadora=transportadora,
+            doca=doca,
+            motorista=motorista,
+            veiculo=veiculo,
+            motorista_nome="Carlos Nunes",
+            motorista_cpf="33344455566",
+            placa="QWE7T89",
+            carga="NF-9001",
+            tipo_operacao="recebimento",
+            status="em_operacao",
+        )
+
+        request = self.factory.get("/box/relatorios/?status=em_operacao&tipo_operacao=recebimento")
+        request.user = user
+
+        response = gerenciar_relatorios(request)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Relatórios operacionais")
+        self.assertContains(response, "Filtro de operação")
+        self.assertContains(response, "Indicadores")
+        self.assertContains(response, "QWE7T89")
+
+    def test_historico_registra_entrada_e_saida_da_movimentacao(self):
+        user = User.objects.create_user(username="portaria_historico", password="123")
+        group, _ = Group.objects.get_or_create(name="Portaria")
+        user.groups.add(group)
+        transportadora = Transportadora.objects.create(
+            razao_social="Logistica Central Ltda",
+            nome_fantasia="Central Log",
+            cnpj="04.000.111/0001-22",
+        )
+        motorista = Motorista.objects.create(nome="Ana Souza", cpf="22233344455")
+        veiculo = Veiculo.objects.create(placa="LMN4F56", modelo="Mercedes Axor")
+        doca = Doca.objects.create(codigo="D24", status="livre")
+
+        request = self.factory.post("/painel/portaria/", {
+            "transportadora": transportadora.id,
+            "motorista": motorista.id,
+            "veiculo": veiculo.id,
+            "doca": doca.id,
+            "tipo_operacao": "recebimento",
+            "carga": "NF-7001",
+        })
+        request.user = user
+        request.session = {}
+        setattr(request, "_messages", FallbackStorage(request))
+        portaria(request)
+
+        movimentacao = Movimentacao.objects.get(veiculo=veiculo)
+        request = self.factory.post(f"/painel/portaria/finalizar/{movimentacao.id}/", {"peso_saida": "9800.00"})
+        request.user = user
+        request.session = {}
+        setattr(request, "_messages", FallbackStorage(request))
+        finalizar_movimentacao(request, movimentacao.id)
+
+        request = self.factory.get("/painel/box/historico/")
+        request.user = User.objects.create_user(username="box_historico", password="123")
+        group, _ = Group.objects.get_or_create(name="Box")
+        request.user.groups.add(group)
+
+        response = gerenciar_historico(request)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "LMN4F56")
+        self.assertContains(response, "Entrada registrada")
+        self.assertContains(response, "Saída registrada")
 
     def test_portaria_registra_movimentacao_com_motorista_e_veiculo_cadastrados(self):
         user = User.objects.create_user(username="portaria_cadastros", password="123")

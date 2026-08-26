@@ -8,7 +8,7 @@ from django.shortcuts import redirect, render
 from django.utils import timezone
 
 from apps.docas.models import Doca
-from apps.operacao.models import Motorista, Movimentacao, Veiculo
+from apps.operacao.models import HistoricoMovimentacao, Motorista, Movimentacao, Veiculo
 from apps.transportadoras.models import Transportadora
 
 
@@ -91,6 +91,61 @@ def box(request):
         raise PermissionDenied("Usuário sem acesso ao Box.")
 
     return render(request, "dashboard/box.html", {
+        "tem_portaria": _has_area_access(request.user, "Portaria"),
+    })
+
+
+@login_required
+def gerenciar_historico(request):
+    if not _has_area_access(request.user, "Box"):
+        raise PermissionDenied("Usuário sem acesso ao Box.")
+
+    historico = HistoricoMovimentacao.objects.select_related("movimentacao__veiculo", "movimentacao__doca", "movimentacao__transportadora").order_by("-criado_em")
+    return render(request, "dashboard/historico.html", {
+        "historico": historico,
+        "tem_portaria": _has_area_access(request.user, "Portaria"),
+    })
+
+
+@login_required
+def gerenciar_relatorios(request):
+    if not _has_area_access(request.user, "Box"):
+        raise PermissionDenied("Usuário sem acesso ao Box.")
+
+    filtro_status = request.GET.get("status")
+    filtro_tipo = request.GET.get("tipo_operacao")
+    filtro_doca = request.GET.get("doca")
+    filtro_placa = request.GET.get("placa")
+
+    movimentacoes = Movimentacao.objects.select_related("transportadora", "doca", "motorista", "veiculo").order_by("-criado_em")
+    if filtro_status:
+        movimentacoes = movimentacoes.filter(status=filtro_status)
+    if filtro_tipo:
+        movimentacoes = movimentacoes.filter(tipo_operacao=filtro_tipo)
+    if filtro_doca:
+        movimentacoes = movimentacoes.filter(doca__codigo__icontains=filtro_doca)
+    if filtro_placa:
+        movimentacoes = movimentacoes.filter(placa__icontains=filtro_placa)
+
+    total_movimentacoes = movimentacoes.count()
+    em_operacao = movimentacoes.filter(status="em_operacao").count()
+    finalizadas = movimentacoes.filter(status="finalizada").count()
+    aguardando = movimentacoes.filter(status="aguardando").count()
+    recebimentos = movimentacoes.filter(tipo_operacao="recebimento").count()
+    carregamentos = movimentacoes.filter(tipo_operacao="carregamento").count()
+
+    return render(request, "dashboard/relatorios.html", {
+        "movimentacoes": movimentacoes[:30],
+        "total_movimentacoes": total_movimentacoes,
+        "em_operacao": em_operacao,
+        "finalizadas": finalizadas,
+        "aguardando": aguardando,
+        "recebimentos": recebimentos,
+        "carregamentos": carregamentos,
+        "filtro_status": filtro_status,
+        "filtro_tipo": filtro_tipo,
+        "filtro_doca": filtro_doca,
+        "filtro_placa": filtro_placa,
         "tem_portaria": _has_area_access(request.user, "Portaria"),
     })
 
@@ -223,6 +278,11 @@ def portaria(request):
             observacoes=(request.POST.get("observacoes") or "").strip(),
             status="em_operacao" if doca else "patio",
         )
+        HistoricoMovimentacao.objects.create(
+            movimentacao=movimentacao,
+            acao="entrada",
+            descricao="Entrada registrada",
+        )
         if doca:
             doca.status = tipo_operacao
             doca.save(update_fields=("status",))
@@ -262,6 +322,11 @@ def finalizar_movimentacao(request, movimentacao_id):
         movimentacao.saida_em = timezone.now()
         movimentacao.status = "finalizada"
         movimentacao.save(update_fields=("peso_saida", "saida_em", "status", "atualizado_em"))
+        HistoricoMovimentacao.objects.create(
+            movimentacao=movimentacao,
+            acao="saida",
+            descricao="Saída registrada",
+        )
         if movimentacao.doca_id:
             movimentacao.doca.status = "livre"
             movimentacao.doca.save(update_fields=("status",))
