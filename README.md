@@ -31,6 +31,8 @@ Central administrativa para usuários autorizados. Reúne cadastros, alteraçõe
 
 Recebe movimentações do WMS por webhook, converte os dados para o formato do DMS e registra cada sincronização para auditoria. O monitoramento das sincronizações fica disponível exclusivamente na tela de administração do Django, em `/admin/integracao_wms/sincronizacaowms/`.
 
+O webhook requer uma assinatura HMAC-SHA256 no cabeçalho `X-WMS-Signature-256`, no formato `sha256=<hex>`. A assinatura deve ser calculada sobre o corpo bruto da requisição usando o segredo configurado em `WMS_WEBHOOK_SECRET` no arquivo `.env`.
+
 ## Fluxo operacional
 
 1. O usuário acessa o sistema e faz login.
@@ -121,6 +123,12 @@ python manage.py runserver
 Acesse `http://127.0.0.1:8000/`.
 
 Configure as credenciais do PostgreSQL no arquivo `.env`. Esse arquivo não deve ser enviado ao GitHub.
+
+Para receber webhooks do WMS, configure também um segredo longo e aleatório:
+
+```text
+WMS_WEBHOOK_SECRET=troque-por-um-segredo-forte
+```
 
 ## Testes
 

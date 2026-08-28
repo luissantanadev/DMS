@@ -85,6 +85,7 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [BASE_DIR / "static"]
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+WMS_WEBHOOK_SECRET = os.getenv("WMS_WEBHOOK_SECRET", "")
 
 CHANNEL_LAYERS = {
     "default": {

@@ -1,7 +1,9 @@
+import hashlib
+import hmac
 import json
 from datetime import datetime, timedelta
 from django.utils import timezone
-from django.test import TestCase, RequestFactory, Client
+from django.test import TestCase, RequestFactory, Client, override_settings
 from django.contrib.auth.models import User, Group
 
 from apps.operacao.models import Movimentacao, Motorista, Veiculo, HistoricoMovimentacao
@@ -113,19 +115,51 @@ class WMSMapperTests(TestCase):
         self.assertFalse(valido)
 
 
+@override_settings(WMS_WEBHOOK_SECRET="segredo-de-teste")
 class WebhookWMSTests(TestCase):
     """Testes para o endpoint webhook WMS"""
     
     def setUp(self):
         self.client = Client()
+        self.webhook_secret = "segredo-de-teste"
+
+    def post_webhook(self, payload, signature=None):
+        body = payload if isinstance(payload, str) else json.dumps(payload)
+        if signature is None:
+            signature = "sha256=" + hmac.new(
+                self.webhook_secret.encode("utf-8"),
+                body.encode("utf-8"),
+                hashlib.sha256,
+            ).hexdigest()
+        return self.client.post(
+            "/wms/webhook/",
+            data=body,
+            content_type="application/json",
+            headers={"X-WMS-Signature-256": signature},
+        )
+
+    def test_webhook_rejeita_assinatura_ausente(self):
+        response = self.client.post(
+            "/wms/webhook/",
+            data=json.dumps({"shipment_id": "SHP-TEST", "status_code": "STORED"}),
+            content_type="application/json",
+        )
+
+        self.assertEqual(response.status_code, 401)
+        self.assertFalse(response.json()["success"])
+
+    def test_webhook_rejeita_assinatura_invalida(self):
+        response = self.post_webhook(
+            {"shipment_id": "SHP-TEST", "status_code": "STORED"},
+            signature="sha256=invalida",
+        )
+
+        self.assertEqual(response.status_code, 401)
+        self.assertFalse(response.json()["success"])
     
     def test_webhook_rejeita_json_invalido(self):
         """Testa rejeição de JSON inválido"""
-        response = self.client.post(
-            '/wms/webhook/',
-            data='json inválido',
-            content_type='application/json'
-        )
+        response = self.post_webhook("json inválido")
         
         self.assertEqual(response.status_code, 400)
         self.assertFalse(response.json()['success'])
@@ -137,14 +171,19 @@ class WebhookWMSTests(TestCase):
             # Faltando status_code
         }
         
-        response = self.client.post(
-            '/wms/webhook/',
-            data=json.dumps(wms_payload),
-            content_type='application/json'
-        )
+        response = self.post_webhook(wms_payload)
         
         self.assertEqual(response.status_code, 400)
         self.assertFalse(response.json()['success'])
+
+    def test_webhook_processa_assinatura_valida(self):
+        response = self.post_webhook({
+            "shipment_id": "SHP-AUTORIZADO",
+            "status_code": "STORED",
+        })
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.json()["success"])
 
 
 class SincronizacaoWMSModelTests(TestCase):

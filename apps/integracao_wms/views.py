@@ -1,4 +1,8 @@
+import hashlib
+import hmac
 import json
+from django.conf import settings
+from django.core.serializers.json import DjangoJSONEncoder
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
@@ -14,6 +18,19 @@ from apps.operacao.models import Movimentacao, HistoricoMovimentacao
 from .models import SincronizacaoWMS
 from .mappers import WMSMovimentacaoMapper
 from .serializers import WebhookWMSSerializer, SincronizacaoWMSSerializer
+
+
+def _webhook_signature_is_valid(request):
+    secret = settings.WMS_WEBHOOK_SECRET
+    signature = request.headers.get("X-WMS-Signature-256", "")
+    expected_signature = "sha256=" + hmac.new(
+        secret.encode("utf-8"), request.body, hashlib.sha256
+    ).hexdigest()
+    return bool(secret) and hmac.compare_digest(signature, expected_signature)
+
+
+def _json_compatible_data(data):
+    return json.loads(json.dumps(data, cls=DjangoJSONEncoder))
 
 
 @csrf_exempt
@@ -34,6 +51,12 @@ def webhook_wms(request):
         "notes": "Armazenado conforme previsto"
     }
     """
+    if not _webhook_signature_is_valid(request):
+        return JsonResponse({
+            "success": False,
+            "error": "Assinatura do webhook inválida",
+        }, status=401)
+
     try:
         wms_data = json.loads(request.body)
     except json.JSONDecodeError:
@@ -111,7 +134,7 @@ def webhook_wms(request):
                 shipment_id=shipment_id,
                 status='sucesso',
                 dados_wms=wms_data,
-                dados_mapeados=dados_mapeados,
+                dados_mapeados=_json_compatible_data(dados_mapeados),
                 operador_wms=wms_data.get('operator_id', ''),
                 localizacao_wms=wms_data.get('warehouse_zone', ''),
             )
