@@ -7,6 +7,7 @@ from .views import (
     gerenciar_relatorios,
     gerenciar_veiculos,
     painel,
+    painel_status_json,
     portaria,
     selecionar_area,
 )
@@ -14,6 +15,7 @@ from .views import (
 urlpatterns = [
     path("acesso/", selecionar_area, name="selecionar_area"),
     path("", painel, name="painel"),
+    path("api/status/", painel_status_json, name="painel_status_json"),
     path("box/", box, name="box"),
     path("box/historico/", gerenciar_historico, name="gerenciar_historico"),
     path("box/relatorios/", gerenciar_relatorios, name="gerenciar_relatorios"),

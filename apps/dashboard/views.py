@@ -1,9 +1,12 @@
 from datetime import datetime, timedelta
 
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.db import transaction
+from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.utils import timezone
 
@@ -23,8 +26,8 @@ def selecionar_area(request):
         areas.append({"nome": "Portaria", "url": "portaria"})
     if _has_area_access(request.user, "Box"):
         areas.extend([
-            {"nome": "Dashboard", "url": "painel"},
-            {"nome": "Box", "url": "box"},
+            {"nome": "Monitoramento", "url": "painel"},
+            {"nome": "Administração", "url": "box"},
         ])
 
     if not areas:
@@ -33,9 +36,8 @@ def selecionar_area(request):
     return render(request, "dashboard/selecionar_area.html", {"areas": areas})
 
 
-@login_required
-def painel(request):
-    if not _has_area_access(request.user, "Box"):
+def _build_painel_data(user):
+    if not _has_area_access(user, "Box"):
         raise PermissionDenied("Usuário sem acesso ao Box.")
 
     docas = list(
@@ -97,12 +99,59 @@ def painel(request):
     docas_livres = sum(1 for d in docas if d["status"] == "livre")
     docas_ocupadas = sum(1 for d in docas if d["status"] != "livre" and d["status"] != "bloqueada")
 
-    return render(request, "dashboard/painel.html", {
+    return {
         "docas": docas,
         "docas_livres": docas_livres,
         "docas_ocupadas": docas_ocupadas,
         "alertas": alertas[:5],
-        "tem_portaria": _has_area_access(request.user, "Portaria"),
+        "tem_portaria": _has_area_access(user, "Portaria"),
+    }
+
+
+class _SystemUser:
+    is_superuser = True
+    groups = None
+
+    def __init__(self):
+        self.groups = type("Groups", (), {"filter": lambda self, *args, **kwargs: []})()
+
+
+def emit_painel_update():
+    channel_layer = get_channel_layer()
+    if channel_layer is None:
+        return
+
+    data = _build_painel_data(_SystemUser())
+    payload = {
+        "docas": data["docas"],
+        "docas_livres": data["docas_livres"],
+        "docas_ocupadas": data["docas_ocupadas"],
+        "alertas": data["alertas"],
+    }
+    async_to_sync(channel_layer.group_send)(
+        "painel_status",
+        {"type": "painel_status", "payload": payload},
+    )
+
+
+@login_required
+def painel(request):
+    data = _build_painel_data(request.user)
+    return render(request, "dashboard/painel.html", data)
+
+
+@login_required
+def painel_status_json(request):
+    if not _has_area_access(request.user, "Box"):
+        raise PermissionDenied("Usuário sem acesso ao Box.")
+
+    data = _build_painel_data(request.user)
+    return JsonResponse({
+        "docas": data["docas"],
+        "docas_livres": data["docas_livres"],
+        "docas_ocupadas": data["docas_ocupadas"],
+        "alertas": data["alertas"],
+        "tem_portaria": data["tem_portaria"],
     })
 
 
@@ -307,6 +356,7 @@ def portaria(request):
         if doca:
             doca.status = tipo_operacao
             doca.save(update_fields=("status",))
+        emit_painel_update()
         messages.success(request, f"Entrada do veículo {veiculo.placa} registrada com sucesso.")
         return redirect("portaria")
 
@@ -352,5 +402,6 @@ def finalizar_movimentacao(request, movimentacao_id):
             movimentacao.doca.status = "livre"
             movimentacao.doca.save(update_fields=("status",))
 
+    emit_painel_update()
     messages.success(request, f"Saída do veículo {movimentacao.placa} registrada com sucesso.")
     return redirect("portaria")

@@ -25,7 +25,12 @@
     <section class="area-options">
         {% for area in areas %}
         <a class="panel area-option area-{{ area.nome|lower }}" href="{% url area.url %}">
-            <span class="area-icon">{% if area.nome == "Portaria" %}↔{% else %}▦{% endif %}</span>
+            <span class="area-icon">
+                {% if area.nome == "Portaria" %}↔
+                {% elif area.nome == "Administração" %}⚙
+                {% else %}▦
+                {% endif %}
+            </span>
             <span class="area-name">{{ area.nome }}</span>
             <span class="area-arrow">→</span>
         </a>

@@ -1,6 +1,6 @@
-# DMS - Controle de Docas
+# DMS - Dock Management System
 
-Sistema web para controle operacional de docas e boxes, desenvolvido com Django e integrado a um WMS por webhook.
+Sistema web para controle operacional de docas, monitoramento e administração, desenvolvido com Django e integrado a um WMS por webhook.
 
 ## Objetivo
 
@@ -15,15 +15,15 @@ O sistema separa a visualização operacional, o atendimento da portaria e a ges
 
 ## Áreas do sistema
 
-### Painel TV
+### Monitoramento
 
-Tela de visualização para ficar em uma TV na operação. Exibe todos os boxes/docas, status, ocupação, veículo, carga, horários e alertas. Não é uma tela de cadastro.
+Tela de visualização para ficar em uma TV na operação. Exibe todas as docas, status, ocupação, veículo, carga, horários e alertas. Não é uma tela de cadastro.
 
 ### Portaria
 
 Registra a entrada do veículo, transportadora, motorista, carga, tipo de operação, pesagem e eventual alocação de uma doca livre. Também registra a saída, o peso final e libera automaticamente a doca.
 
-### Box
+### Administração
 
 Central administrativa para usuários autorizados. Reúne cadastros, alterações, consultas e futuros relatórios.
 
@@ -65,9 +65,9 @@ static/css/             # estilos das telas
 | --- | --- |
 | `/login/` | Login |
 | `/painel/acesso/` | Seleção de área |
-| `/painel/` | Painel TV |
+| `/painel/` | Monitoramento de docas |
 | `/painel/portaria/` | Entrada e saída de veículos |
-| `/painel/box/` | Central de gestão |
+| `/painel/box/` | Administração |
 | `/docas/gerenciar/` | Cadastro e alteração de docas |
 | `/transportadoras/` | Cadastro e consulta de transportadoras |
 | `/transportadoras/api/` | API de transportadoras ativas |
@@ -83,7 +83,7 @@ O acompanhamento visual das sincronizações é feito pelo Django Admin. Os endp
 Crie no Django Admin os grupos:
 
 - `Portaria`: acesso à Portaria;
-- `Box`: acesso ao Painel TV e à central Box;
+- `Box`: acesso ao Monitoramento e à Administração;
 - `Administradores`: acesso às duas áreas.
 
 As permissões são verificadas nas telas e também diretamente nas views. Esconder um link não substitui a proteção do servidor.

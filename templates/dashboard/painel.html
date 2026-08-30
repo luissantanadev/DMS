@@ -4,20 +4,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel de Boxes | Controle de Docas</title>
+    <title>Monitoramento de Docas | Dock Management System</title>
     <link rel="stylesheet" href="{% static 'css/painel.css' %}?v=3">
 </head>
 <body>
 <div class="app">
     <header class="topbar">
         <div>
-            <div class="eyebrow">PAINEL TV • VISUALIZAÇÃO OPERACIONAL</div>
-            <h1>Painel de Boxes</h1>
+            <div class="eyebrow">MONITORAMENTO • VISUALIZAÇÃO OPERACIONAL</div>
+            <h1>Monitoramento de Docas</h1>
         </div>
         <div class="topbar-actions">
             <nav class="main-nav" aria-label="Navegação principal">
                 {% if tem_portaria %}<a class="nav-link" href="{% url 'portaria' %}">Portaria</a>{% endif %}
-                <a class="nav-link" href="{% url 'box' %}">Box</a>
+                <a class="nav-link" href="{% url 'box' %}">Administração</a>
                 <a class="nav-link" href="{% url 'selecionar_area' %}">Troca de área</a>
             </nav>
             <form method="post" action="{% url 'logout' %}">
@@ -40,7 +40,7 @@
     <main class="content">
         <section class="dock-panel">
             <div class="section-title">
-                <h2>Mapa dos Boxes</h2>
+                <h2>Mapa das Docas</h2>
                 <div class="legend">
                     <span><i class="dot livre"></i> Livre</span>
                     <span><i class="dot recebimento"></i> Recebimento</span>
@@ -118,16 +118,53 @@ function updateClock() {
 setInterval(updateClock, 1000);
 updateClock();
 
-const cards = [...document.querySelectorAll(".dock-card")];
-document.getElementById("kpi-livres").textContent =
-    cards.filter(c => c.classList.contains("livre")).length;
-document.getElementById("kpi-ocupadas").textContent =
-    cards.filter(c => !c.classList.contains("livre") &&
-                      !c.classList.contains("bloqueada")).length;
+function renderPanel(data) {
+    const dockGrid = document.querySelector(".dock-grid");
+    if (!dockGrid || !Array.isArray(data.docas)) return;
+
+    dockGrid.innerHTML = data.docas.map(doca => `
+        <article class="dock-card ${doca.status}${doca.alerta ? ' alert-active' : ''}">
+            <div class="dock-head">
+                <strong>${doca.codigo}</strong>
+                <span class="status-label">${doca.status ? doca.status.replace('_', ' ').replace(/\b\w/g, ch => ch.toUpperCase()) : 'Livre'}</span>
+            </div>
+            <div class="dock-body">
+                <div class="load">${doca.carga || '—'}</div>
+                <div class="time">${doca.hora || 'Disponível'}</div>
+                ${doca.duracao_minutos ? `<div class="duration">${doca.duracao_minutos}m</div>` : ''}
+                ${doca.alerta ? `<div class="alert-badge">${doca.alerta}</div>` : ''}
+            </div>
+            <div class="dock-footer">WMS • ONLINE</div>
+        </article>
+    `).join('');
+
+    document.getElementById("kpi-livres").textContent = data.docas_livres;
+    document.getElementById("kpi-ocupadas").textContent = data.docas_ocupadas;
+    document.getElementById("kpi-alertas").textContent = data.alertas.length;
+
+    const cards = [...document.querySelectorAll(".dock-card")];
+    cards.forEach(card => {
+        card.onclick = function () {
+            selecionarDoca(card.querySelector('strong')?.textContent || 'doca');
+        };
+    });
+}
 
 function selecionarDoca(codigo) {
     alert("Detalhes da " + codigo + " — próxima etapa: painel lateral/modal integrado ao WMS.");
 }
+
+const endpoint = `${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.host}/ws/painel/`;
+const socket = new WebSocket(endpoint);
+
+socket.onmessage = function (event) {
+    const data = JSON.parse(event.data);
+    renderPanel(data);
+};
+
+socket.onerror = function () {
+    console.warn('WebSocket do painel indisponível; mantendo versão HTTP.');
+};
 </script>
 </body>
 </html>

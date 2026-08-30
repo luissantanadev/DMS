@@ -1,3 +1,4 @@
+import json
 from datetime import timedelta
 
 from django.contrib.auth.models import Group, User
@@ -14,6 +15,7 @@ from apps.dashboard.views import (
     gerenciar_relatorios,
     gerenciar_veiculos,
     painel,
+    painel_status_json,
     portaria,
     selecionar_area,
 )
@@ -37,7 +39,7 @@ class AreaAccessTests(TestCase):
         response = selecionar_area(request)
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Box")
+        self.assertContains(response, "Administração")
         self.assertNotContains(response, "Portaria")
 
     def test_user_without_area_access_is_blocked(self):
@@ -63,6 +65,26 @@ class AreaAccessTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "D99")
+
+    def test_painel_status_json_exibe_estado_operacional(self):
+        user = User.objects.create_user(username="box_status_json", password="123")
+        group, _ = Group.objects.get_or_create(name="Box")
+        user.groups.add(group)
+
+        Doca.objects.create(codigo="D88", status="livre", ativo=True)
+        Doca.objects.create(codigo="D89", status="recebimento", ativo=True)
+
+        request = self.factory.get("/painel/api/status/")
+        request.user = user
+
+        response = painel_status_json(request)
+
+        self.assertEqual(response.status_code, 200)
+        payload = json.loads(response.content)
+        self.assertIn("docas", payload)
+        self.assertEqual(payload["docas_livres"], 1)
+        self.assertEqual(payload["docas_ocupadas"], 1)
+        self.assertIn("D88", payload["docas"][0]["codigo"])
 
     def test_box_exibe_central_de_gestao(self):
         user = User.objects.create_user(username="box_gestao", password="123")

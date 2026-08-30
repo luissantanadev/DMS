@@ -4,21 +4,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Box | Controle de Docas</title>
+    <title>Administração | Controle de Docas</title>
     <link rel="stylesheet" href="{% static 'css/painel.css' %}">
 </head>
 <body>
 <div class="app">
     <header class="topbar">
         <div>
-            <div class="eyebrow">LOGISTICS CONTROL TOWER • BOX</div>
-            <h1>Gestão operacional</h1>
+            <div class="eyebrow">LOGISTICS CONTROL TOWER • ADMINISTRAÇÃO</div>
+            <h1>Administração de Docas</h1>
         </div>
         <div class="topbar-actions">
             <nav class="main-nav" aria-label="Navegação principal">
-                <a class="nav-link" href="{% url 'painel' %}">Dashboard</a>
+                <a class="nav-link" href="{% url 'painel' %}">Monitoramento</a>
                 {% if tem_portaria %}<a class="nav-link" href="{% url 'portaria' %}">Portaria</a>{% endif %}
-                <a class="nav-link active" href="{% url 'box' %}">Box</a>
+                <a class="nav-link active" href="{% url 'box' %}">Administração</a>
                 <a class="nav-link" href="{% url 'selecionar_area' %}">Troca de área</a>
             </nav>
             <form method="post" action="{% url 'logout' %}">
@@ -29,9 +29,9 @@
     </header>
 
     <section class="panel box-heading">
-        <span class="eyebrow">CENTRAL DE GESTÃO</span>
+        <span class="eyebrow">ADMINISTRAÇÃO</span>
         <h2>Cadastros, alterações e relatórios</h2>
-        <p class="helper-text">Administre os dados usados pela operação do DMS em um único ambiente.</p>
+        <p class="helper-text">Administre os dados usados pelo DMS em um único ambiente.</p>
     </section>
 
     <main class="management-grid">
